@@ -22,7 +22,7 @@ If you're lost, see the [Detailed Install](https://github.com/Kappawaii/nixos-bc
 ## Quick Start
 (You really should read the rest so you understand what you install but here is the TL;DR)
 
-Needs: a BC-250, a USB stick, a disk to install the OS on (ideally M.2, but USB should work too), and any x86_64 Linux machine with Nix or Docker.
+Needs: a BC-250, a USB stick, a disk to install the OS on (ideally M.2; USB should work too, but some devices take too long to start and the BC250 doesn't see them), and any x86_64 Linux machine with Nix or Docker.
 
 **About `private.nix`:** everything personal lives in this one file, which is git-ignored and never committed:
 This is how you setup and personalize your instance !
