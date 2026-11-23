@@ -11,12 +11,13 @@ The current version is only if you have confirmed that you have 40CU and 8 cores
 |-|-|-|
 |Base|[n3oney/bc250-nixos](https://github.com/n3oney/bc250-nixos): patched `7.0.9-cachyos` kernel, Mesa 26, 40-CU unlock, 16 GiB GTT, arieltune `balanced` profile|`flake.nix`|
 |CPU cores|`bc250-core-unlock` from [TesseractCat/bc250-nixos](https://github.com/TesseractCat/bc250-nixos): 6c/12t → **8c/16t**, runs in the systemd initrd (adds one automatic reboot per cold boot) - ACPI table fix (C-states + schedutil)|`flake.nix`|
-|LLM|llama.cpp (Vulkan) serving `Qwen3.5-4B-Q6_K.gguf` on port **8080**, 32k context, tool calling (`--jinja`), prompt cache in RAM capped at 1 GB (`--cache-ram 1024`), \~72 tokens/s|`configuration.nix` → `bc250.llamaVulkan`|
+|LLM|llama.cpp (Vulkan) serving `Qwen3.5-4B-Q6_K.gguf` on port **8080**, 32k context, tool calling (`--jinja`), prompt cache in RAM capped at 1 GB (`--cache-ram 1024`), ~72 tokens/s|`configuration.nix` → `bc250.llamaVulkan`|
 |GPU idle|`cyan-skillfish-governor-smu`, [filippor's memory-profile branch](https://github.com/filippor/cyan-skillfish-governor) pinned to `b770314`: GPU 350–1850 MHz down to 700 mV, `smu` set method, `busy-flag` usage, `fix-freq`; memory/fabric profiles **disabled** (see Issues)|`flake.nix` (package) + `configuration.nix` (settings)|
 |Access|SSH key only, no passwords anywhere, password-less sudo|`configuration.nix`|
-|Monitoring|Glances web server on port **61208**; Modded Glances version with GPU usage % ;|`configuration.nix`|
+|Monitoring|Modded Glances version with GPU usage on port **61208**|`configuration.nix`|
 |Installer|Unattended USB installer: wipes the only non-USB-stick disk, installs, copies this repo to `/etc/nixos`, powers off|`autoinstall.nix`|
 
+If you're lost, see the [Detailed Install](https://github.com/Kappawaii/nixos-bc250/wiki/Detailed-Install) wiki page for the Docker build and how to reconnect `/etc/nixos` to git, and longer instructions to set this project up.
 ## Quick Start
 (You really should read the rest so you understand what you install but here is the TL;DR)
 
@@ -61,7 +62,7 @@ This is how you setup your instance !
 5. The API is at `http://<board-ip>:8080` (OpenAI-compatible) and Glances at `http://<board-ip>:61208`.
 
 To change something, edit `/etc/nixos/*.nix` on the board, then `rebuild`.
-See **Fresh install / duplicate** below for the Docker build and how to reconnect `/etc/nixos` to git.
+
 
 ## How to configure/modify
 
@@ -70,17 +71,12 @@ Uses nano cause I prefer it you can change the aliases if you want :)
 
 |Alias|Does|
 |-|-|
-|`nixconf`|edit `/etc/nixos/configuration.nix`|
-|`flakeconf`|edit `/etc/nixos/flake.nix`|
-|`rebuild`|`sudo nixos-rebuild switch --flake /etc/nixos#bc250`|
-|`rollback`|go back to the previous generation|
+|`nixconf`|Open the nix configuration file `/etc/nixos/configuration.nix`|
+|`flakeconf`|Open the flake configuration file `/etc/nixos/flake.nix`|
+|`rebuild`|Rebuild the NixOS Configuration after you do any changes `sudo nixos-rebuild switch --flake path:/etc/nixos#bc250`|
+|`rollback`|go back to the previous build|
 
 Older builds are selectable from the boot menu if a change breaks something.
-
-
-### Before building for yourself
-
-Copy `private.example.nix` to `private.nix` and fill in your username, hostname, SSH key and git name/email. This file is gitignored and never committed.
 
 ## Not in this repo and needed
 
@@ -93,19 +89,19 @@ Copy `private.example.nix` to `private.nix` and fill in your username, hostname,
 
 ```bash
 curl -s http://localhost:8080/health                                   # {"status":"ok"} = model loaded
-sensors | grep -E 'PPT|vddgfx|sclk'                                    # idle: \~700 mV, 350 MHz
-cat /run/gpu-busy                                                      # GPU busy %: \~0 idle, \~90 generating
-lscpu | grep -E '^CPU\\(s\\)'                                          # 16 = core unlock active
-sensors nct6686-isa-0a20                                               # fan RPM, board/VRM temps
+sensors | grep -E 'PPT|vddgfx|sclk'                                    # idle: ~700 mV, 350 MHz
+cat /run/gpu-busy                                                      # GPU busy %: ~0 idle, ~90 generating
+lscpu | grep -E '^CPU\(s\)'                                            # 16 = core unlock active
+sensors 'nct6687-*'                                                    # fan RPM, board/VRM temps
 ls /sys/devices/system/cpu/cpu0/cpuidle/                               # state0..state3 = ACPI fix active
-sudo dmesg | grep -iE 'amdgpu.\*(reset|wedged)'                        # only the two SDMA lines at \~12 s are normal
+sudo dmesg | grep -iE 'amdgpu.*(reset|wedged)'                         # only the two SDMA lines at ~12 s are normal
 ```
 
 ## Current issues
 
-* The **memory fabric profile is disabled** (`memory-fabric-profile.enabled = false;`). It saved \~10–20 W at idle
-(\~52 W at the wall with it on), but froze the board under sustained GPU load and during large compiles, with nothing
-in the logs. With it off, memory/fabric stay at full speed (\~18.7 GiB/s CPU-side, \~72 tok/s). Don't re-enable it.
+* The **memory fabric profile is disabled** (`memory-fabric-profile.enabled = false;`). It saved ~10–20 W at idle
+~52 W at the wall with it on), but froze the board under sustained GPU load and during large compiles, with nothing
+in the logs. With it off, memory/fabric stay at full speed (~18.7 GiB/s CPU-side, ~72 tok/s). Don't re-enable it.
 * The kernel is pinned (7.0.11+ regresses SDMA on this board): treat `nix flake update` as a hardware event and re-test.
 * Most of the development until this point has been on making a stable, repeatable and easy to install platform for people to host LLMs on BC-250s without having to learn much about the board.
 * This is still in development, and I'm currently testing repeatability of the install. Some issues might still be hidden somewhere, feel free to post issues or PRs here.
