@@ -1,9 +1,9 @@
 # nixos-bc250
 
 NixOS configuration for an **AMD BC-250** used as a headless local LLM server:
-Tuned for performance and stability, and low idle power usage (~76W currently with a mediocre PSU, possible below 50W with memory tuning and a better PSU like LOP-300-12 but not stable yet).
+Tuned for performance and stability, and low idle power usage (~76W currently with an oversized PSU, possible below 50W with memory tuning and a better PSU like LOP-300-12 but not stable yet).
 
-The current version is only if you have confirmed that you have 40CU and 8 cores working and stable! A 24CU/6core and/or variable version is coming later.
+### The current version is only if you have confirmed that you have 40CU and 8 cores working and stable! A 24CU/6core and/or variable version is coming later.
 
 ## What's in the build.
 
