@@ -3,7 +3,7 @@
 NixOS configuration for an **AMD BC-250** used as a headless local LLM server:
 Tuned for low idle(~76W Idle, possible below 55W but not stable yet), performance and stability.
 
-The current version is only if you have confirmed that you have 40CU and 8 cores working and stable ! A 24CU/6core version is coming later.
+The current version is only if you have confirmed that you have 40CU and 8 cores working and stable ! A 24CU/6core and/or variable version is coming later.
 
 ## What's in the build.
 
