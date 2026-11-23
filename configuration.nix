@@ -182,5 +182,10 @@ let p = import ./private.nix; in
     flakeconf = "sudo nano /etc/nixos/flake.nix";
     rollback = "sudo nixos-rebuild switch --rollback";
   };
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+    publish = { enable = true; addresses = true; };
+  };
   systemd.services."serial-getty@ttyS1".enable = false;
 }
