@@ -1,7 +1,7 @@
 # nixos-bc250
 
 NixOS configuration for an **AMD BC-250** used as a headless local LLM server:
-Tuned for low idle power and stability. (~76W Idle, possible below 55W but not stable yet)
+Tuned for low idle(~76W Idle, possible below 55W but not stable yet), performance and stability.
 
 ## Quick Start
 (You really should read the rest so you understand what you install but here is the TL;DR)
@@ -149,15 +149,12 @@ the next push asks for the git server's password or token once.
 
 Copy `private.example.nix` to `private.nix` and fill in your username, hostname, SSH key and git name/email. This file is gitignored and never committed.
 
-## Not in this repo
+## Not in this repo and needed
 
 * **BIOS**: modded BIOS, 512 MB UMA/VRAM split and BIOS settings are on the board itself, including the USB boot fixes
 (Chipset → USB Configuration: device power-up delay, USB2.0 Port0/1 battery charging enabled).
-* **Models**: `/var/lib/llmtune/models` (re-download, see above).
-* **SSH host keys**: new on every install, expect one "host key changed" warning.
-* **Git state**: the `.git` folder and remote (`/etc/nixos/.git`) and token (`\~/.git-credentials`) are
-local, redone by step 6. The token is deliberately never committed. (Git name/email/credential helper *are*
-in the config: `programs.git`.)
+* **Models**: the `.gguf` isn't in the repo or the ISO (it's several GB). Download it after the first boot (Quick start, step 4).
+* **SSH host keys**: Add your own public key to the private.nix file so you can login after the install.
 
 ## Checks
 
@@ -177,4 +174,9 @@ sudo dmesg | grep -iE 'amdgpu.\*(reset|wedged)'                        # only th
 (\~52 W at the wall with it on), but froze the board under sustained GPU load and during large compiles, with nothing
 in the logs. With it off, memory/fabric stay at full speed (\~18.7 GiB/s CPU-side, \~72 tok/s). Don't re-enable it.
 * The kernel is pinned (7.0.11+ regresses SDMA on this board): treat `nix flake update` as a hardware event and re-test.
+* Most of the development until this point has been on making a stable, repeatable and easy to install platform for people to host LLMs on BC-250s without having to learn much about the board.
+* This is still in development, and I'm currently testing repeatability of the install. Some issues might still be hidden somewhere, feel free to post issues or PRs here.
 
+## Disclaimer
+As for most things BC-250, AI LLMs were heavily used in the development of this Nix configuration. Every bit of code or documentation produced by an LLM was read, human-reviewed, and tested.
+The only ports exposed are the glances interface, ssh (key only by design), and llama.cpp .
