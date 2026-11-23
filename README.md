@@ -1,16 +1,16 @@
 # nixos-bc250
 
 NixOS configuration for an **AMD BC-250** used as a headless local LLM server:
-Tuned for low idle(~76W Idle, possible below 55W but not stable yet), performance and stability.
+Tuned for performance and stability, and low idle power usage (~76W currently with a mediocre PSU, possible below 50W with memory tuning but not stable yet).
 
-The current version is only if you have confirmed that you have 40CU and 8 cores working and stable ! A 24CU/6core and/or variable version is coming later.
+The current version is only if you have confirmed that you have 40CU and 8 cores working and stable! A 24CU/6core and/or variable version is coming later.
 
 ## What's in the build.
 
 |Area|What|Where|
 |-|-|-|
 |Base|[n3oney/bc250-nixos](https://github.com/n3oney/bc250-nixos): patched `7.0.9-cachyos` kernel, Mesa 26, 40-CU unlock, 16 GiB GTT, arieltune `balanced` profile|`flake.nix`|
-|CPU cores|`bc250-core-unlock` from [TesseractCat/bc250-nixos](https://github.com/TesseractCat/bc250-nixos): 6c/12t → **8c/16t**, runs in the systemd initrd (adds one automatic reboot per cold boot) - ACPI table fix (C-states + schedutil)|`flake.nix`|
+|CPU |`bc250-core-unlock` from [TesseractCat/bc250-nixos](https://github.com/TesseractCat/bc250-nixos): 6c/12t → **8c/16t**, runs in the systemd initrd (adds one automatic reboot per cold boot) - ACPI table fix (C-states + schedutil)|`flake.nix`|
 |LLM|llama.cpp (Vulkan) serving `Qwen3.5-4B-Q6_K.gguf` on port **8080**, 32k context, tool calling (`--jinja`), prompt cache in RAM capped at 1 GB (`--cache-ram 1024`), ~72 tokens/s|`configuration.nix` → `bc250.llamaVulkan`|
 |GPU idle|`cyan-skillfish-governor-smu`, [filippor's memory-profile branch](https://github.com/filippor/cyan-skillfish-governor) pinned to `b770314`: GPU 350–1850 MHz down to 700 mV, `smu` set method, `busy-flag` usage, `fix-freq`; memory/fabric profiles **disabled** (see Issues)|`flake.nix` (package) + `configuration.nix` (settings)|
 |Access|SSH key only, no passwords anywhere, password-less sudo|`configuration.nix`|
@@ -18,10 +18,30 @@ The current version is only if you have confirmed that you have 40CU and 8 cores
 |Installer|Unattended USB installer: wipes the only non-USB-stick disk, installs, copies this repo to `/etc/nixos`, powers off|`autoinstall.nix`|
 
 If you're lost, see the [Detailed Install](https://github.com/Kappawaii/nixos-bc250/wiki/Detailed-Install) wiki page for the Docker build and how to reconnect `/etc/nixos` to git, and longer instructions to set this project up.
+
 ## Quick Start
 (You really should read the rest so you understand what you install but here is the TL;DR)
 
 Needs: a BC-250, a USB stick, a disk to install the OS on (ideally M.2, but USB should work too), and any x86_64 Linux machine with Nix or Docker.
+
+**About `private.nix`:** everything personal lives in this one file, which is git-ignored and never committed:
+This is how you setup and personalize your instance !
+
+- Use the **public** key of the computer you connect **from**.
+- Git doesn't track this file, so always build with a **`path:`** flake reference (`path:.#...`, `path:/etc/nixos#bc250`). A plain `.#...` uses only git-tracked files and fails with "private.nix does not exist". The `rebuild` alias already does this.
+- The installer copies `private.nix` onto the board, so later rebuilds work without redoing it.
+
+```nix
+{
+  user     = "me";                                 # your login name on the board
+  hostName = "bc250";                              # hostname on the OS
+  sshKeys  = [ "ssh-ed25519 AAAA... me@pc" ];      # public key(s) of the PC(s) you SSH from
+  gitName  = "me";                                 # for commits made on the board
+  gitEmail = "me@example.com";
+}
+```
+
+Then build the installer:
 
 ```bash
 git clone <this-repo-url> nixos-bc250 && cd nixos-bc250
@@ -30,21 +50,6 @@ nix build path:.#autoinstallIso --print-build-logs \
   --option extra-substituters https://neoney.cachix.org \
   --option extra-trusted-public-keys neoney.cachix.org-1:bsFaTdG04tfzci0osGfosbRX8KX94Ih/2hU0HpJ+qRM=
 ```
-**About `private.nix`:** everything personal lives in this one file, which is gitignored and never committed:
-This is how you setup your instance !
-
-```nix
-{
-  user     = "me";                                 # your login name on the board
-  hostName = "bc250";                              # network name (bc250.lan, etc.)
-  sshKeys  = [ "ssh-ed25519 AAAA... me@pc" ];      # public key(s) of the PC(s) you SSH from
-  gitName  = "me";                                 # for commits made on the board
-  gitEmail = "me@example.com";
-}
-```
-- Use the **public** key of the computer you connect **from**.
-- Git doesn't track this file, so always build with a **`path:`** flake reference (`path:.#...`, `path:/etc/nixos#bc250`). A plain `.#...` uses only git-tracked files and fails with "private.nix does not exist". The `rebuild` alias already does this.
-- The installer copies `private.nix` onto the board, so later rebuilds work without redoing it.
 
 1. Write `result/iso/*.iso` to the stick (Rufus in **DD mode**).
 2. Boot the board from the stick. It wipes the only other disk, installs, and powers off.
@@ -83,7 +88,6 @@ Older builds are selectable from the boot menu if a change breaks something.
 * **BIOS**: modded BIOS, 512 MB UMA/VRAM split and BIOS settings are on the board itself, including the USB boot fixes
 (Chipset → USB Configuration: device power-up delay, USB2.0 Port0/1 battery charging enabled).
 * **Models**: the `.gguf` isn't in the repo or the ISO (it's several GB). Download it after the first boot (Quick start, step 4).
-* **SSH host keys**: Add your own public key to the private.nix file so you can login after the install.
 
 ## Checks
 
@@ -100,12 +104,13 @@ sudo dmesg | grep -iE 'amdgpu.*(reset|wedged)'                         # only th
 ## Current issues
 
 * The **memory fabric profile is disabled** (`memory-fabric-profile.enabled = false;`). It saved ~10–20 W at idle
-~52 W at the wall with it on), but froze the board under sustained GPU load and during large compiles, with nothing
+(~52 W at the wall with it on), but froze the board under sustained GPU load and during large compiles, with nothing
 in the logs. With it off, memory/fabric stay at full speed (~18.7 GiB/s CPU-side, ~72 tok/s). Don't re-enable it.
 * The kernel is pinned (7.0.11+ regresses SDMA on this board): treat `nix flake update` as a hardware event and re-test.
 * Most of the development until this point has been on making a stable, repeatable and easy to install platform for people to host LLMs on BC-250s without having to learn much about the board.
 * This is still in development, and I'm currently testing repeatability of the install. Some issues might still be hidden somewhere, feel free to post issues or PRs here.
-
+* llama.cpp and Glances have no authentication, and sudo needs no password. Keep the board on your LAN and don't port-forward its ports. Auth for both these services coming very soon.
+  
 ## Disclaimer
 As for most things BC-250, AI LLMs were heavily used in the development of this Nix configuration. Every bit of code or documentation produced by an LLM was read, human-reviewed, and tested.
 The only ports exposed are the glances interface, ssh (key only by design), and llama.cpp .
