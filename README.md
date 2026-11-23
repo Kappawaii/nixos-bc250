@@ -1,9 +1,55 @@
-N# nixos-bc250
+# nixos-bc250
 
 NixOS configuration for an **AMD BC-250** used as a headless local LLM server:
 Tuned for low idle power and stability. (~76W Idle, possible below 55W but not stable yet)
 
-## What's in it
+## Quick Start
+(You really should read the rest so you understand what you install but here is the TL;DR)
+
+Needs: a BC-250, a USB stick, a disk to install the OS on (ideally M.2, but USB should work too), and any x86_64 Linux machine with Nix or Docker.
+
+```bash
+git clone <this-repo-url> nixos-bc250 && cd nixos-bc250
+cp private.example.nix private.nix && nano private.nix   # your user, SSH key, git name/email
+nix build path:.#autoinstallIso --print-build-logs \
+  --option extra-substituters https://neoney.cachix.org \
+  --option extra-trusted-public-keys neoney.cachix.org-1:bsFaTdG04tfzci0osGfosbRX8KX94Ih/2hU0HpJ+qRM=
+```
+**About `private.nix`:** everything personal lives in this one file, which is gitignored and never committed:
+This is how you setup your instance !
+
+```nix
+{
+  user     = "me";                                 # your login name on the board
+  hostName = "bc250";                              # network name (bc250.lan, etc.)
+  sshKeys  = [ "ssh-ed25519 AAAA... me@pc" ];      # public key(s) of the PC(s) you SSH from
+  gitName  = "me";                                 # for commits made on the board
+  gitEmail = "me@example.com";
+}
+```
+- Use the **public** key of the computer you connect **from**.
+- Git doesn't track this file, so always build with a **`path:`** flake reference (`path:.#...`, `path:/etc/nixos#bc250`). A plain `.#...` uses only git-tracked files and fails with "private.nix does not exist". The `rebuild` alias already does this.
+- The installer copies `private.nix` onto the board, so later rebuilds work without redoing it.
+
+1. Write `result/iso/*.iso` to the stick (Rufus in **DD mode**).
+2. Boot the board from the stick. It wipes the only other disk, installs, and powers off.
+   > ⚠️ DISCONNECT ANY DISK WITH DATA YOU CARE ABOUT FIRST. YOU RISK LOSING ALL DATA CONNECTED TO THE BOARD WHEN STARTING THE BC-250 WITH THE INSTALL ISO STICK PLUGGED IN.
+
+3. Remove the stick, power on, then `ssh <user>@<board-ip>`.
+4. Download the model:
+
+   ```bash
+   sudo nix shell nixpkgs#curl -c curl -L --fail -C - --create-dirs \
+     -o /var/lib/llmtune/models/Qwen3.5-4B-Q6_K.gguf \
+     https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/main/Qwen3.5-4B-Q6_K.gguf
+   ```
+
+5. The API is at `http://<board-ip>:8080` (OpenAI-compatible) and Glances at `http://<board-ip>:61208`.
+
+To change something, edit `/etc/nixos/*.nix` on the board, then `rebuild`.
+See **Fresh install / duplicate** below for the Docker build and how to reconnect `/etc/nixos` to git.
+
+## What's in the build.
 
 |Area|What|Where|
 |-|-|-|
@@ -18,7 +64,7 @@ Tuned for low idle power and stability. (~76W Idle, possible below 55W but not s
 |Disk|GPT: 1 GiB ESP + ext4 root, mounted by partition label|`disko.nix`|
 |Installer|Unattended USB installer: wipes the only non-USB-stick disk, installs, copies this repo to `/etc/nixos`, powers off|`autoinstall.nix`|
 
-## How to configure
+## How to configure/modify
 
 Shell aliases (defined in `configuration.nix`):
 Uses nano cause I prefer it you can change the aliases if you want :)
