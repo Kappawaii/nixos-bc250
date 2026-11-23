@@ -1,7 +1,7 @@
 # nixos-bc250
 
 NixOS configuration for an **AMD BC-250** used as a headless local LLM server:
-Tuned for performance and stability, and low idle power usage (~76W currently with a mediocre PSU, possible below 50W with memory tuning but not stable yet).
+Tuned for performance and stability, and low idle power usage (~76W currently with a mediocre PSU, possible below 50W with memory tuning and a better PSU like LOP-300-12 but not stable yet).
 
 The current version is only if you have confirmed that you have 40CU and 8 cores working and stable! A 24CU/6core and/or variable version is coming later.
 
@@ -13,7 +13,7 @@ The current version is only if you have confirmed that you have 40CU and 8 cores
 |CPU |`bc250-core-unlock` from [TesseractCat/bc250-nixos](https://github.com/TesseractCat/bc250-nixos): 6c/12t → **8c/16t**, runs in the systemd initrd (adds one automatic reboot per cold boot) - ACPI table fix (C-states + schedutil)|`flake.nix`|
 |LLM|llama.cpp (Vulkan) serving `Qwen3.5-4B-Q6_K.gguf` on port **8080**, 32k context, tool calling (`--jinja`), prompt cache in RAM capped at 1 GB (`--cache-ram 1024`), ~72 tokens/s|`configuration.nix` → `bc250.llamaVulkan`|
 |GPU idle|`cyan-skillfish-governor-smu`, [filippor's memory-profile branch](https://github.com/filippor/cyan-skillfish-governor) pinned to `b770314`: GPU 350–1850 MHz down to 700 mV, `smu` set method, `busy-flag` usage, `fix-freq`; memory/fabric profiles **disabled** (see Issues)|`flake.nix` (package) + `configuration.nix` (settings)|
-|Access|SSH key only, no passwords anywhere, password-less sudo|`configuration.nix`|
+|Access|SSH key only, no passwords anywhere, password-less sudo; reachable as `<hostName>.local` (mDNS)|`configuration.nix`|
 |Monitoring|Modded Glances version with GPU usage on port **61208**|`configuration.nix`|
 |Installer|Unattended USB installer: wipes the only non-USB-stick disk, installs, copies this repo to `/etc/nixos`, powers off|`autoinstall.nix`|
 
@@ -34,7 +34,7 @@ This is how you setup and personalize your instance !
 ```nix
 {
   user     = "me";                                 # your login name on the board
-  hostName = "bc250";                              # hostname on the OS
+  hostName = "bc250";                              # reachable as <hostName>.local (bc250.local by default)
   sshKeys  = [ "ssh-ed25519 AAAA... me@pc" ];      # public key(s) of the PC(s) you SSH from
   gitName  = "me";                                 # for commits made on the board
   gitEmail = "me@example.com";
@@ -55,7 +55,8 @@ nix build path:.#autoinstallIso --print-build-logs \
 2. Boot the board from the stick. It wipes the only other disk, installs, and powers off.
    > ⚠️ DISCONNECT ANY DISK WITH DATA YOU CARE ABOUT FIRST. YOU RISK LOSING ALL DATA CONNECTED TO THE BOARD WHEN STARTING THE BC-250 WITH THE INSTALL ISO STICK PLUGGED IN.
 
-3. Remove the stick, power on, then `ssh <user>@<board-ip>`.
+3. Remove the stick, power on, then `ssh <user>@<hostName>.local` (e.g. `ssh me@bc250.local`).
+   If that doesn't resolve, find the IP in your router's list of connected devices.
 4. Download the model:
 
    ```bash
@@ -64,7 +65,7 @@ nix build path:.#autoinstallIso --print-build-logs \
      https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/main/Qwen3.5-4B-Q6_K.gguf
    ```
 
-5. The API is at `http://<board-ip>:8080` (OpenAI-compatible) and Glances at `http://<board-ip>:61208`.
+5. The API is at `http://<hostName>.local:8080` (OpenAI-compatible) and Glances at `http://<hostName>.local:61208`.
 
 To change something, edit `/etc/nixos/*.nix` on the board, then `rebuild`.
 
@@ -113,4 +114,4 @@ in the logs. With it off, memory/fabric stay at full speed (~18.7 GiB/s CPU-side
   
 ## Disclaimer
 As for most things BC-250, AI LLMs were heavily used in the development of this Nix configuration. Every bit of code or documentation produced by an LLM was read, human-reviewed, and tested.
-The only ports exposed are the glances interface, ssh (key only by design), and llama.cpp .
+The only ports exposed are SSH (key only by design), llama.cpp (8080), Glances (61208) and mDNS (5353/UDP, only announces the board's name on the LAN).
