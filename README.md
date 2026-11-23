@@ -14,9 +14,7 @@ The current version is only if you have confirmed that you have 40CU and 8 cores
 |LLM|llama.cpp (Vulkan) serving `Qwen3.5-4B-Q6\_K.gguf` on port **8080**, 32k context, tool calling (`--jinja`), prompt cache in RAM capped at 1 GB (`--cache-ram 1024`), \~72 tokens/s|`configuration.nix` → `bc250.llamaVulkan`|
 |GPU idle|`cyan-skillfish-governor-smu`, [filippor's memory-profile branch](https://github.com/filippor/cyan-skillfish-governor) pinned to `b770314`: GPU 350–1850 MHz down to 700 mV, `smu` set method, `busy-flag` usage, `fix-freq`; memory/fabric profiles **disabled** (see Caveats)|`flake.nix` (package) + `configuration.nix` (settings)|
 |Access|SSH key only, no passwords anywhere, password-less sudo|`configuration.nix`|
-|Monitoring|Glances web server on port **61208** (10 s refresh); fan + board/VRM sensors via the `nct6687d` driver (NCT6686D chip); GPU load via the `gpu-busy` service (busy % from DRM fdinfo → `/run/gpu-busy`) and a patched Glances that reads it; `nvtop`|`lm_sensors`|
-|Misc|`usbutils`/`lm_sensors`/`nvtop` installed|`configuration.nix`|
-|Git|`programs.git`: name/email for commits, credential helper (`store`) for pushes to Forgejo|`configuration.nix`|
+|Monitoring|Glances web server on port **61208**; Modded Glances version with GPU usage % ;|`configuration.nix`|
 |Installer|Unattended USB installer: wipes the only non-USB-stick disk, installs, copies this repo to `/etc/nixos`, powers off|`autoinstall.nix`|
 
 ## Quick Start
