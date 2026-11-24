@@ -202,10 +202,12 @@ in
     };
   };
   environment.shellAliases = {
-    rebuild = "sudo nixos-rebuild switch --flake path:/etc/nixos#bc250";
-    nixconf = "sudo nano /etc/nixos/configuration.nix";
+    rebuild   = "sudo nixos-rebuild switch --flake path:/etc/nixos#bc250";
+    rollback  = "sudo nixos-rebuild switch --rollback";
+    nixconf   = "sudo nano /etc/nixos/configuration.nix";
     flakeconf = "sudo nano /etc/nixos/flake.nix";
-    rollback = "sudo nixos-rebuild switch --rollback";
+    privconf  = "sudo nano /etc/nixos/private.nix";
+    modelconf = "sudo nano /etc/nixos/models.nix";
   };
   services.avahi = {
     enable = true;

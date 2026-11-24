@@ -75,6 +75,8 @@ Uses nano cause I prefer it you can change the aliases if you want :)
 |`flakeconf`|Open the flake configuration file `/etc/nixos/flake.nix`|
 |`rebuild`|Rebuild the NixOS Configuration after you do any changes `sudo nixos-rebuild switch --flake path:/etc/nixos#bc250`|
 |`rollback`|go back to the previous build|
+|`privconf`|Open your personal settings `/etc/nixos/private.nix` (user, SSH keys, hostname, model)|
+|`modelconf`|Open the model list `/etc/nixos/models.nix`|
 
 Older builds are selectable from the boot menu if a change breaks something.
 
