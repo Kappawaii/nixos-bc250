@@ -1,5 +1,10 @@
 { config, pkgs, ... }:
-let p = import ./private.nix; in
+let
+  p = import ./private.nix;
+  models = import ./models.nix;
+  model = models.${p.model} or (throw
+    "private.nix: unknown model '${p.model}'. Choose one of: ${builtins.concatStringsSep ", " (builtins.attrNames models)}");
+in
 {
   # Git: commit identity + remember the token after the first push
   programs.git = {
@@ -52,14 +57,34 @@ let p = import ./private.nix; in
   boot.kernelParams = [ "ttm.pages_limit=4194304" ];
 
   # --- llama.cpp on the GPU (port 8080), models in /var/lib/llmtune/models ---
-  bc250.llamaVulkan = let
-    qwenFlags = "-c 32768 --parallel 1 --flash-attn on --no-mmap --jinja -ngl 99 -t 4 -ctk q8_0 -ctv q8_0 --reasoning-budget 0 --temp 0.7 --top-p 0.8 --top-k 20 --cache-ram 2048";
-  in {
+  bc250.llamaVulkan = {
     enable = true;
     modelsSource = "local";
-    modelFile = "Qwen3.5-4B-Q6_K.gguf"; # must match the file name exactly
-    gemmaFlags = qwenFlags;   # the service always starts with this one
-    defaultFlags = qwenFlags; # used by bc250-swap for non-gemma models
+    modelFile    = model.file;
+    gemmaFlags   = model.flags; # the service always starts with this one
+    defaultFlags = model.flags; # used by bc250-swap for non-gemma models
+  };
+  
+  # Download the model chosen in private.nix if it isn't there yet
+  systemd.services.llm-model-download = {
+    description = "Download the selected LLM model if it's missing";
+    wantedBy = [ "multi-user.target" ];
+    wants = [ "network-online.target" ];
+    after = [ "network-online.target" ];
+    path = [ pkgs.curl pkgs.coreutils ];
+    serviceConfig = { Type = "oneshot"; RemainAfterExit = true; };
+    script = ''
+      f=${config.bc250.llamaVulkan.modelsDirectory}/${model.file}
+      if [ ! -f "$f" ]; then
+        curl -L --fail -C - --create-dirs -o "$f.part" "${model.url}"
+        mv "$f.part" "$f"
+      fi
+    '';
+  };
+
+  systemd.services.llama-server = {
+    wants = [ "llm-model-download.service" ];
+    after = [ "llm-model-download.service" ];
   };
 
   # --- Boot ---
@@ -67,7 +92,7 @@ let p = import ./private.nix; in
   boot.loader.efi.canTouchEfiVariables = true;
 
   # --- Network ---
-  networking.hostName = "bc250";
+  networking.hostName = p.hostName;
   networking.firewall.allowedTCPPorts = [ 22 8080 ];
 
   # --- Access ---
