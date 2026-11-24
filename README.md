@@ -99,8 +99,7 @@ sudo dmesg | grep -iE 'amdgpu.*(reset|wedged)'                         # only th
 ## Current issues
 
 * The **memory fabric profile is disabled** (`memory-fabric-profile.enabled = false;`). It saved ~10–20 W at idle
-(~52 W at the wall with it on), but froze the board under sustained GPU load and during large compiles, with nothing
-in the logs. With it off, memory/fabric stay at full speed (~18.7 GiB/s CPU-side, ~72 tok/s). Don't re-enable it.
+(~52 W at the wall with it on), but froze the board randomly. With it off, memory/fabric stay at full speed (~18.7 GiB/s CPU-side, ~72 tok/s).
 * The kernel is pinned (7.0.11+ regresses SDMA on this board): treat `nix flake update` as a hardware event and re-test.
 * Most of the development until this point has been on making a stable, repeatable and easy to install platform for people to host LLMs on BC-250s without having to learn much about the board.
 * This is still in development, and I'm currently testing repeatability of the install. Some issues might still be hidden somewhere, feel free to post issues or PRs here.
