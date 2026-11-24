@@ -5,5 +5,5 @@
   sshKeys  = [ "ssh-ed25519 AAAA... me@pc" ];
   gitName  = "me";
   gitEmail = "me@example.com";
-  model    = "qwen4b";
+  model    = "qwen4b"; # model repo in models.nix
 }

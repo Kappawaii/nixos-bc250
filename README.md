@@ -30,6 +30,7 @@ This is how you setup and personalize your instance !
 - Use the **public** key of the computer you connect **from**.
 - Git doesn't track this file, so always build with a **`path:`** flake reference (`path:.#...`, `path:/etc/nixos#bc250`). A plain `.#...` uses only git-tracked files and fails with "private.nix does not exist". The `rebuild` alias already does this.
 - The installer copies `private.nix` onto the board, so later rebuilds work without redoing it.
+- To use a different model: add it to `models.nix`, put its name in the `model` field in `private.nix`, then execute `rebuild`. The new model downloads automatically.
 
 ```nix
 {
@@ -57,14 +58,7 @@ nix build path:.#autoinstallIso --print-build-logs \
 
 3. Remove the stick, power on, then `ssh <user>@<hostName>.local` (e.g. `ssh me@bc250.local`).
    If that doesn't resolve, find the IP in your router's list of connected devices.
-4. Download the model:
-
-   ```bash
-   sudo nix shell nixpkgs#curl -c curl -L --fail -C - --create-dirs \
-     -o /var/lib/llmtune/models/Qwen3.5-4B-Q6_K.gguf \
-     https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/main/Qwen3.5-4B-Q6_K.gguf
-   ```
-
+4. The model set in `private.nix` downloads automatically on first boot (several GB, so give it a few minutes). Check with `systemctl status llm-model-download`.
 5. The API is at `http://<hostName>.local:8080` (OpenAI-compatible) and Glances at `http://<hostName>.local:61208`.
 
 To change something, edit `/etc/nixos/*.nix` on the board, then `rebuild`.
