@@ -5,20 +5,6 @@ Tuned for performance and low idle power usage (~72W currently with an oversized
 
 ### The current version is only if you have confirmed that you have 40CU and 8 cores working and stable! A 24CU/6core and/or variable version is coming later.
 
-## What's in the build.
-
-|Area|What|Where|
-|-|-|-|
-|Base|[n3oney/bc250-nixos](https://github.com/n3oney/bc250-nixos): patched `7.0.9-cachyos` kernel, Mesa 26, 40-CU unlock, 16 GiB GTT, arieltune `balanced` profile|`flake.nix`|
-|CPU |`bc250-core-unlock` from [TesseractCat/bc250-nixos](https://github.com/TesseractCat/bc250-nixos): 6c/12t → **8c/16t**, runs in the systemd initrd (adds one automatic reboot per cold boot) - ACPI table fix (C-states + schedutil)|`flake.nix`|
-|LLM|llama.cpp (Vulkan) on port **8080**. Model chosen by name in `private.nix` from the presets in `models.nix`, downloaded automatically. Default: `Qwen3.5-4B-Q6_K.gguf`, 32k context, tool calling (`--jinja`), prompt cache in RAM capped at 1 GB (`--cache-ram 1024`), ~72 tokens/s|`models.nix` + `configuration.nix` → `bc250.llamaVulkan`|
-|GPU idle|`cyan-skillfish-governor-smu`, [filippor's memory-profile branch](https://github.com/filippor/cyan-skillfish-governor) pinned to `b770314`: GPU 350–1850 MHz down to 700 mV, `smu` set method, `busy-flag` usage, `fix-freq`; memory/fabric profiles **disabled** (see Issues)|`flake.nix` (package) + `configuration.nix` (settings)|
-|Access|SSH key only, no passwords anywhere, password-less sudo; reachable as `<hostName>.local` (mDNS)|`configuration.nix`|
-|Monitoring|Modded Glances version with GPU usage on port **61208**|`configuration.nix`|
-|Installer|Unattended USB installer: wipes the only non-USB-stick disk, installs, copies this repo to `/etc/nixos`, powers off|`autoinstall.nix`|
-
-If you're lost, see the [Detailed Install](https://github.com/Kappawaii/nixos-bc250/wiki/Detailed-Install) wiki page for the Docker build and how to reconnect `/etc/nixos` to git, and longer instructions to set this project up.
-
 ## Quick Start
 (You really should read the rest so you understand what you install but here is the TL;DR)
 
@@ -63,7 +49,6 @@ nix build path:.#autoinstallIso --print-build-logs \
 
 To change something, edit `/etc/nixos/*.nix` on the board, then `rebuild`.
 
-
 ## How to configure/modify
 
 Shell aliases (defined in `configuration.nix`):
@@ -79,6 +64,20 @@ Uses nano cause I prefer it you can change the aliases if you want :)
 |`modelconf`|Open the model list `/etc/nixos/models.nix`|
 
 Older builds are selectable from the boot menu if a change breaks something.
+
+## What's in the build.
+
+|Area|What|Where|
+|-|-|-|
+|Base|[n3oney/bc250-nixos](https://github.com/n3oney/bc250-nixos): patched `7.0.9-cachyos` kernel, Mesa 26, 40-CU unlock, 16 GiB GTT, arieltune `balanced` profile|`flake.nix`|
+|CPU |`bc250-core-unlock` from [TesseractCat/bc250-nixos](https://github.com/TesseractCat/bc250-nixos): 6c/12t → **8c/16t**, runs in the systemd initrd (adds one automatic reboot per cold boot) - ACPI table fix (C-states + schedutil)|`flake.nix`|
+|LLM|llama.cpp (Vulkan) on port **8080**. Model chosen by name in `private.nix` from the presets in `models.nix`, downloaded automatically. Default: `Qwen3.5-4B-Q6_K.gguf`, 32k context, tool calling (`--jinja`), prompt cache in RAM capped at 1 GB (`--cache-ram 1024`), ~72 tokens/s|`models.nix` + `configuration.nix` → `bc250.llamaVulkan`|
+|GPU idle|`cyan-skillfish-governor-smu`, [filippor's memory-profile branch](https://github.com/filippor/cyan-skillfish-governor) pinned to `b770314`: GPU 350–1850 MHz down to 700 mV, `smu` set method, `busy-flag` usage, `fix-freq`; memory/fabric profiles **disabled** (see Issues)|`flake.nix` (package) + `configuration.nix` (settings)|
+|Access|SSH key only, no passwords anywhere, password-less sudo; reachable as `<hostName>.local` (mDNS)|`configuration.nix`|
+|Monitoring|Modded Glances version with GPU usage on port **61208**|`configuration.nix`|
+|Installer|Unattended USB installer: wipes the only non-USB-stick disk, installs, copies this repo to `/etc/nixos`, powers off|`autoinstall.nix`|
+
+If you're lost, see the [Detailed Install](https://github.com/Kappawaii/nixos-bc250/wiki/Detailed-Install) wiki page for the Docker build and how to reconnect `/etc/nixos` to git, and longer instructions to set this project up.
 
 ## Not in this repo and needed
 
