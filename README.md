@@ -51,7 +51,7 @@ nix build path:.#autoinstallIso --print-build-logs \
    If that doesn't resolve, find the IP in your router's list of connected devices.
 4. The model set in `private.nix` downloads automatically on first boot (several GB, so give it a few minutes). Check with `systemctl status llm-model-download`.
 5. The API is at `http://<hostName>.local:8080` (OpenAI-compatible) and Glances at `http://<hostName>.local:61208`.
-
+   The API needs a key, generated on the board at first boot. Read it with `sudo cat /var/lib/bc250-secrets/llama-api-key`, and put it in your client's API-key field. `/health` stays open without a key.
 To change something, edit `/etc/nixos/*.nix` on the board, then `rebuild`.
 
 ## How to configure/modify
@@ -67,7 +67,7 @@ Uses nano cause I prefer it you can change the aliases if you want :)
 |`rollback`|go back to the previous build|
 |`privconf`|Open your personal settings `/etc/nixos/private.nix` (user, SSH keys, hostname, model)|
 |`modelconf`|Open the model list `/etc/nixos/models.nix`|
-|`nixstatus`|Health check: shows every setting and whether the board matches it (✓ / ✗)|
+|`nixstatus`|Health check: shows every setting and whether it works currently on the board|
 
 Older builds are selectable from the boot menu if a change breaks something.
 
@@ -79,7 +79,7 @@ Older builds are selectable from the boot menu if a change breaks something.
 |CPU|[TesseractCat/bc250-nixos](https://github.com/TesseractCat/bc250-nixos): `bc250-core-unlock` 6c/12t → **8c/16t** (**off by default**, `unlockCores`; adds one automatic reboot per cold boot) and ACPI table fix (C-states + schedutil). arieltune CPU tuning: 3.8 GHz boost + curve undervolt -18 (**off by default**, `cpuTuning`)|`flake.nix`, `configuration.nix`, `private.nix`|
 |LLM|llama.cpp (Vulkan) on port **8080**. Model chosen by name in `private.nix` from the presets in `models.nix`, downloaded automatically. Default: `Qwen3.5-4B-Q6_K.gguf`, 32k context, tool calling (`--jinja`), prompt cache in RAM capped at 1 GB (`--cache-ram 1024`), ~72 tokens/s unlocked|`models.nix`, `configuration.nix` → `bc250.llamaVulkan`|
 |GPU idle|`cyan-skillfish-governor-smu`, [filippor's memory-profile branch](https://github.com/filippor/cyan-skillfish-governor) pinned to `b770314`: GPU 350-1850 MHz down to 700 mV, `smu` set method, `busy-flag` usage, `fix-freq`; memory/fabric profiles **disabled** (see Issues)|`flake.nix` (package), `configuration.nix` (settings)|
-|Access|SSH key only, no passwords anywhere, password-less sudo; reachable as `<hostName>.local` (mDNS)|`configuration.nix`, `private.nix`|
+|Access|SSH key only, password-less sudo; llama.cpp API key generated on the board at `/var/lib/bc250-secrets/llama-api-key`; reachable as `<hostName>.local`|`private.nix`|
 |Monitoring|`nixstatus` health check; Glances on port **61208**, patched to show GPU usage (from the `gpu-busy` service, also used by Home Assistant); fan and VRM sensors via the nct6687d module|`configuration.nix`, `nixstatus.nix`|
 |Installer|Unattended USB installer: wipes the only non-USB-stick disk, installs, copies this repo to `/etc/nixos`, powers off|`autoinstall.nix`|
 
