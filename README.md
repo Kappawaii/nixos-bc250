@@ -15,6 +15,13 @@ Needs:
 
 ### 1. Personalize your instance: `private.nix`
 
+Download the config and create your `private.nix` from the example:
+
+```bash
+git clone https://github.com/Kappawaii/nixos-bc250.git nixos-bc250 && cd nixos-bc250
+cp private.example.nix private.nix && nano private.nix
+```
+
 **About `private.nix`:** everything personal lives in this one file, which is git-ignored and never committed:
 This is how you setup and personalize your instance !
 
@@ -31,16 +38,16 @@ This is how you setup and personalize your instance !
 }
 ```
 
-- Use the **public** key of the computer you connect **from**. Password login is disabled, so ssh keys are mandatory.
+- Use the **public** key of the computer you connect **from**. Password login is disabled, so SSH keys are mandatory.
 - Git ignores this file, so Nix only sees it if the build command starts with `path:` (for example `path:/etc/nixos#bc250`). The `rebuild` alias and the commands in this README already do this. If you type your own command without `path:`, it fails with "private.nix does not exist".
 - The installer copies `private.nix` onto the board, so later rebuilds work without redoing it.
 - To use a different model: add it to `models.nix`, put its name in the `model` field, then `rebuild`. The new model downloads automatically.
 
 ### 2. Build the installer
 
+From the `nixos-bc250` folder:
+
 ```bash
-git clone <this-repo-url> nixos-bc250 && cd nixos-bc250
-cp private.example.nix private.nix && nano private.nix   # your user, SSH key, model...
 nix build path:.#autoinstallIso --print-build-logs \
   --option extra-substituters "https://neoney.cachix.org https://kappawaii.cachix.org" \
   --option extra-trusted-public-keys "neoney.cachix.org-1:bsFaTdG04tfzci0osGfosbRX8KX94Ih/2hU0HpJ+qRM= kappawaii.cachix.org-1:4OjsK6+MXtp3oQIB3zLT18bmvCE8Yc7KBnAlK5IQijk="
