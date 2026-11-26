@@ -11,7 +11,7 @@ Tuned for performance and low idle power usage (~72W currently with an oversized
 |-|-|-|
 |Base|[n3oney/bc250-nixos](https://github.com/n3oney/bc250-nixos): patched `7.0.9-cachyos` kernel, Mesa 26, 40-CU unlock, 16 GiB GTT, arieltune `balanced` profile|`flake.nix`|
 |CPU |`bc250-core-unlock` from [TesseractCat/bc250-nixos](https://github.com/TesseractCat/bc250-nixos): 6c/12t → **8c/16t**, runs in the systemd initrd (adds one automatic reboot per cold boot) - ACPI table fix (C-states + schedutil)|`flake.nix`|
-|LLM|llama.cpp (Vulkan) serving `Qwen3.5-4B-Q6_K.gguf` on port **8080**, 32k context, tool calling (`--jinja`), prompt cache in RAM capped at 1 GB (`--cache-ram 1024`), ~72 tokens/s|`configuration.nix` → `bc250.llamaVulkan`|
+|LLM|llama.cpp (Vulkan) on port **8080**. Model chosen by name in `private.nix` from the presets in `models.nix`, downloaded automatically. Default: `Qwen3.5-4B-Q6_K.gguf`, 32k context, tool calling (`--jinja`), prompt cache in RAM capped at 1 GB (`--cache-ram 1024`), ~72 tokens/s|`models.nix` + `configuration.nix` → `bc250.llamaVulkan`|
 |GPU idle|`cyan-skillfish-governor-smu`, [filippor's memory-profile branch](https://github.com/filippor/cyan-skillfish-governor) pinned to `b770314`: GPU 350–1850 MHz down to 700 mV, `smu` set method, `busy-flag` usage, `fix-freq`; memory/fabric profiles **disabled** (see Issues)|`flake.nix` (package) + `configuration.nix` (settings)|
 |Access|SSH key only, no passwords anywhere, password-less sudo; reachable as `<hostName>.local` (mDNS)|`configuration.nix`|
 |Monitoring|Modded Glances version with GPU usage on port **61208**|`configuration.nix`|
@@ -28,7 +28,7 @@ Needs: a BC-250, a USB stick, a disk to install the OS on (ideally M.2; USB shou
 This is how you setup and personalize your instance !
 
 - Use the **public** key of the computer you connect **from**.
-- Git doesn't track this file, so always build with a **`path:`** flake reference (`path:.#...`, `path:/etc/nixos#bc250`). A plain `.#...` uses only git-tracked files and fails with "private.nix does not exist". The `rebuild` alias already does this.
+- Git ignores this file, so Nix only sees it if the build command starts with `path:` (for example `path:/etc/nixos#bc250`). The `rebuild` alias and the commands in this README already do this. If you type your own command without `path:`, it fails with "private.nix does not exist".
 - The installer copies `private.nix` onto the board, so later rebuilds work without redoing it.
 - To use a different model: add it to `models.nix`, put its name in the `model` field in `private.nix`, then execute `rebuild`. The new model downloads automatically.
 

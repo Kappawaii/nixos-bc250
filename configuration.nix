@@ -2,8 +2,8 @@
 let
   p = import ./private.nix;
   models = import ./models.nix;
-  model = models.${p.model} or (throw
-    "private.nix: unknown model '${p.model}'. Choose one of: ${builtins.concatStringsSep ", " (builtins.attrNames models)}");
+  # Fall back to the first preset so the assertion below can report a clean error
+  model = models.${p.model} or (builtins.head (builtins.attrValues models));
 in
 {
   # Git: commit identity + remember the token after the first push
@@ -64,6 +64,11 @@ in
     gemmaFlags   = model.flags; # the service always starts with this one
     defaultFlags = model.flags; # used by bc250-swap for non-gemma models
   };
+
+  assertions = [{
+    assertion = models ? ${p.model};
+    message = "private.nix: unknown model '${p.model}'. Choose one of: ${builtins.concatStringsSep ", " (builtins.attrNames models)}";
+  }];
   
   # Download the model chosen in private.nix if it isn't there yet
   systemd.services.llm-model-download = {
@@ -99,7 +104,7 @@ in
   users.users.${p.user} = {
     isNormalUser = true;
     extraGroups = [ "wheel" "video" "render" ];
-    hashedPassword = "!"; # run passwd after first login
+    hashedPassword = "!"; # locked: SSH key login only
     openssh.authorizedKeys.keys = p.sshKeys;
   };
   services.openssh = {
@@ -147,19 +152,13 @@ in
     '';
   };
 
-  # Glances: hide unconnected sensors, friendlier names, GPU load as an AMP
+  # Glances: hide unconnected sensors, friendlier names
   environment.etc."glances/glances.conf".text = ''
     [sensors]
     # Not connected on the BC-250 (always 0)
     hide=CPU Socket,M2_1,PCH,PCIe x1,CPU Fan,System Fan.*
     alias=Pump Fan:BC-250 fan,System:Board,VRM MOS:VRM
 
-    [amp_gpu]
-    enable=true
-    regex=.*llama-server.*
-    refresh=5
-    one_line=true
-    command=cat /run/gpu-busy
   '';
 
   # Glances: read GPU load from /run/gpu-busy (our fdinfo service) instead of the
@@ -171,8 +170,6 @@ in
         --replace-fail "read_file(device_folder, GPU_PROC_PERCENT)" "read_file('/run/gpu-busy')"
     '';
   });
-
-  # --- Nix ---
 
   # --- Nix ---
   nix.settings = {
