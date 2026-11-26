@@ -44,11 +44,7 @@ if git -C "$NS_FLAKE_DIR" rev-parse >/dev/null 2>&1; then
   ver=$(git -C "$NS_FLAKE_DIR" describe --tags --exact-match 2>/dev/null || git -C "$NS_FLAKE_DIR" rev-parse --short HEAD 2>/dev/null)
   # show the branch only when it is not main
   branch=$(git -C "$NS_FLAKE_DIR" branch --show-current 2>/dev/null); [ "$branch" = main ] && branch=""
-  if [ -n "$(git -C "$NS_FLAKE_DIR" status --porcelain 2>/dev/null)" ]; then
-    line "Config" "${repo:-$NS_FLAKE_DIR} ${branch:+$branch@}${ver} ${YEL}(uncommitted changes)${R}"
-  else
-    line "Config" "${repo:-$NS_FLAKE_DIR} ${branch:+$branch@}${ver} $(mark ok)"
-  fi
+  line "Config" "${repo:-$NS_FLAKE_DIR} ${branch:+$branch@}${ver}"
 else
   line "Config" "$NS_FLAKE_DIR (not a git repo)"
 fi
