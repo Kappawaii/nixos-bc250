@@ -56,7 +56,7 @@
             # 6c/12t -> 8c/16t; runs in the (systemd) initrd, adds one reboot per cold boot.
             # Skip once with the kernel parameter bc250.nocoreunlock
             boot.initrd.systemd.enable = true;
-            services.bc250-core-unlock.enable = true;
+            #services.bc250-core-unlock.enable = true; is now a variable in private.nix
             services.cyan-skillfish-governor-smu = {
               enable = true;
               package = pkgs.rustPlatform.buildRustPackage {

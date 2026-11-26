@@ -18,11 +18,16 @@ in
   programs.nano.nanorc = ''
     set linenumbers
   '';
+
   # --- BC-250 hardware (n3oney/bc250-nixos) ---
   hardware.bc250 = {
     enable = true;
     vulkan.enable = true;
   };
+  # CU / core unlocks, set per board in private.nix (default: on)
+  hardware.bc250.computeUnitWriteMode = if (p.unlockCUs or true) then 3 else 0;
+  services.bc250-core-unlock.enable = p.unlockCores or true;
+
   services.arieltune-tune = {
     enable = true;
     profile = "balanced";
