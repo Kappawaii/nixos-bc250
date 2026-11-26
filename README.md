@@ -93,16 +93,12 @@ If you're lost, see the [Detailed Install](https://github.com/Kappawaii/nixos-bc
 
 ## Checks
 
-Run `nixstatus` for a full overview with a ✓ or ✗ per check. The commands below are the individual checks, for digging deeper:
+Run `nixstatus` for a full overview with a ✓ or ✗ per check.
+
+To see whether the GPU has crashed or reset since boot:
 
 ```bash
-curl -s http://localhost:8080/health                                   # {"status":"ok"} = model loaded
-sensors | grep -E 'PPT|vddgfx|sclk'                                    # idle: ~700 mV, 350 MHz
-cat /run/gpu-busy                                                      # GPU busy %: ~0 idle, ~90 generating
-lscpu | grep -E '^CPU\(s\)'                                            # 16 = core unlock active
-sensors 'nct6687-*'                                                    # fan RPM, board/VRM temps
-ls /sys/devices/system/cpu/cpu0/cpuidle/                               # state0..state3 = ACPI fix active
-sudo dmesg | grep -iE 'amdgpu.*(reset|wedged)'                         # only the two SDMA lines at ~12 s are normal
+sudo dmesg | grep -iE 'amdgpu.*(reset|wedged)'   # only the two SDMA lines at ~12 s are normal
 ```
 
 ## Current issues
