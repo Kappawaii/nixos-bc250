@@ -3,7 +3,7 @@
 A turnkey, easy to install, stable NixOS configuration for an **AMD BC-250** used as a headless local LLM server:
 Tuned for performance and low idle power usage (~72W currently with an oversized PSU, possible below 50W with memory tuning and a better PSU like LOP-300-12 but not stable yet).
 
-### By default the board runs stock: 24 CUs, 6 cores/12 threads, no CPU tuning. Once your board is confirmed stable unlocked, set `unlockCUs`, `unlockCores` and `cpuTuning` to `true` in `private.nix`, `rebuild`, then reboot (a cold boot for the cores). `nixstatus` shows which mode is active.
+### By default the board runs stock: 24 CUs, 6 cores/12 threads, no CPU tuning. Once your board is confirmed stable with all compute unlocked, set `unlockCUs`, `unlockCores` and `cpuTuning` to `true` in `private.nix`, `rebuild`, then reboot (a cold boot for the cores). `nixstatus` shows which mode is active.
 
 ## Quick Start
 (You really should read the rest so you understand what you install but here is the TL;DR)
@@ -78,7 +78,7 @@ Older builds are selectable from the boot menu if a change breaks something.
 |Base|[n3oney/bc250-nixos](https://github.com/n3oney/bc250-nixos): patched `7.0.9-cachyos` kernel, Mesa 26, 40-CU unlock (switchable with `unlockCUs`), 16 GiB GTT, arieltune CPU tuning only (3.8 GHz boost + curve undervolt -18, switchable with `cpuTuning`)|`flake.nix`|
 |CPU |`bc250-core-unlock` from [TesseractCat/bc250-nixos](https://github.com/TesseractCat/bc250-nixos): 6c/12t → **8c/16t** (switchable with `unlockCores`), runs in the systemd initrd (adds one automatic reboot per cold boot) - ACPI table fix (C-states + schedutil)|`flake.nix`|
 |LLM|llama.cpp (Vulkan) on port **8080**. Model chosen by name in `private.nix` from the presets in `models.nix`, downloaded automatically. Default: `Qwen3.5-4B-Q6_K.gguf`, 32k context, tool calling (`--jinja`), prompt cache in RAM capped at 1 GB (`--cache-ram 1024`), ~72 tokens/s|`models.nix` + `configuration.nix` → `bc250.llamaVulkan`|
-|GPU idle|`cyan-skillfish-governor-smu`, [filippor's memory-profile branch](https://github.com/filippor/cyan-skillfish-governor) pinned to `b770314`: GPU 350–1850 MHz down to 700 mV, `smu` set method, `busy-flag` usage, `fix-freq`; memory/fabric profiles **disabled** (see Issues)|`flake.nix` (package) + `configuration.nix` (settings)|
+|GPU idle|`cyan-skillfish-governor-smu`, [filippor's memory-profile branch](https://github.com/filippor/cyan-skillfish-governor) pinned to `b770314`: GPU 3501850 MHz down to 700 mV, `smu` set method, `busy-flag` usage, `fix-freq`; memory/fabric profiles **disabled** (see Issues)|`flake.nix` (package) + `configuration.nix` (settings)|
 |Access|SSH key only, no passwords anywhere, password-less sudo; reachable as `<hostName>.local` (mDNS)|`configuration.nix`|
 |Monitoring|Modded Glances version with GPU usage on port **61208**|`configuration.nix`|
 |Installer|Unattended USB installer: wipes the only non-USB-stick disk, installs, copies this repo to `/etc/nixos`, powers off|`autoinstall.nix`|
@@ -107,7 +107,7 @@ sudo dmesg | grep -iE 'amdgpu.*(reset|wedged)'                         # only th
 
 ## Current issues
 
-* The **memory fabric profile is disabled** (`memory-fabric-profile.enabled = false;`). It saved ~10–20 W at idle
+* The **memory fabric profile is disabled** (`memory-fabric-profile.enabled = false;`). It saved ~1020 W at idle
 (~52 W at the wall with it on), but froze the board randomly. With it off, memory/fabric stay at full speed (~18.7 GiB/s CPU-side, ~72 tok/s).
 * The kernel is pinned (7.0.11+ regresses SDMA on this board): treat `nix flake update` as a hardware event and re-test.
 * Most of the development until this point has been on making a stable, repeatable and easy to install platform for people to host LLMs on BC-250s without having to learn much about the board.
