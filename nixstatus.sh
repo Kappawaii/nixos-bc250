@@ -95,11 +95,10 @@ line "Mem prof." "${NS_MEMPROFILE}${mclk:+, memory clock $mclk}$(hint $st "expec
 gttdev=$(dirname "$(ls /sys/class/drm/card*/device/mem_info_gtt_total 2>/dev/null | head -1)")
 gtt_used=$(div "$(rd "$gttdev/mem_info_gtt_used")" 1073741824 "%.1f")
 gtt_total=$(div "$(rd "$gttdev/mem_info_gtt_total")" 1073741824 "%.1f GiB")
-line "GTT" "${gtt_used} / ${gtt_total}"
 # VRAM carve-out set in the BIOS (UMA frame buffer size): expect 512 MiB
 vram=$(div "$(rd "$gttdev/mem_info_vram_total")" 1048576 "%.0f")
 [ "$vram" = 512 ] && st=ok || st=bad
-line "VRAM" "${vram} MiB$(hint $st "BIOS UMA, expect 512") $(mark $st)"
+line "GPU mem" "${gtt_used} / ${gtt_total} shared, ${vram} MiB reserved$(hint $st "BIOS UMA setting, expect 512 MiB") $(mark $st)"
 gap
 
 # --- board -----------------------------------------------------------------
