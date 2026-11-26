@@ -98,7 +98,7 @@ Run `nixstatus` for a full overview with a ✓ or ✗ per check.
 To see whether the GPU has crashed or reset since boot:
 
 ```bash
-sudo dmesg | grep -iE 'amdgpu.*(reset|wedged)'   # only the two SDMA lines at ~12 s are normal
+sudo dmesg | grep -iE 'amdgpu.*(reset|wedged)'   # only the two SDMA resets at ~12 s are normal
 ```
 
 ## Current issues
