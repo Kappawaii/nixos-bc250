@@ -109,3 +109,10 @@ sudo dmesg | grep -iE 'amdgpu.*(reset|wedged)'                         # only th
 ## Disclaimer
 As for most things BC-250, AI LLMs were heavily used in the development of this Nix configuration. Every bit of code or documentation produced by an LLM was read, human-reviewed, and tested.
 The only ports exposed are SSH (key only by design), llama.cpp (8080), Glances (61208) and mDNS (5353/UDP, only announces the board's name on the LAN).
+
+## License
+
+[MIT](LICENSE). This repo references these projects, with their own licenses :
+[n3oney/bc250-nixos](https://github.com/n3oney/bc250-nixos) (GPL-2.0-only),
+[TesseractCat/bc250-nixos](https://github.com/TesseractCat/bc250-nixos) (MIT),
+[filippor/cyan-skillfish-governor](https://github.com/filippor/cyan-skillfish-governor) (MIT).
