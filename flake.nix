@@ -59,6 +59,8 @@
             #services.bc250-core-unlock.enable = true; is now a variable in private.nix
             services.cyan-skillfish-governor-smu = {
               enable = true;
+            # Governor package adapted from TesseractCat/bc250-nixos
+            # (cyan-skillfish-governor-smu/package.nix, MIT License, Copyright (c) 2026 TesseractCat)
               package = pkgs.rustPlatform.buildRustPackage {
                 pname = "cyan-skillfish-governor-smu";
                 version = "memory-profile-b770314";
