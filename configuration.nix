@@ -81,8 +81,8 @@ in
     enable = true;
     modelsSource = "local";
     modelFile    = model.file;
-    gemmaFlags   = model.flags; # the service always starts with this one
-    defaultFlags = model.flags; # used by bc250-swap for non-gemma models
+    gemmaFlags   = model.flags + " --api-key-file /var/lib/bc250-secrets/llama-api-key"; # the service always starts with this one
+    defaultFlags = model.flags + " --api-key-file /var/lib/bc250-secrets/llama-api-key"; # used by bc250-swap for non-gemma models
   };
 
   assertions = [{
@@ -108,8 +108,25 @@ in
   };
 
   systemd.services.llama-server = {
-    wants = [ "llm-model-download.service" ];
-    after = [ "llm-model-download.service" ];
+    wants = [ "llm-model-download.service" "llm-api-key.service" ];
+    after = [ "llm-model-download.service" "llm-api-key.service" ];
+  };
+
+  # llama.cpp API key: generated once on the board, never in git or the Nix store.
+  # Read it with: sudo cat /var/lib/bc250-secrets/llama-api-key
+  systemd.services.llm-api-key = {
+    description = "Create the llama.cpp API key if it's missing";
+    wantedBy = [ "multi-user.target" ];
+    path = [ pkgs.coreutils ];
+    serviceConfig = { Type = "oneshot"; RemainAfterExit = true; };
+    script = ''
+      f=/var/lib/bc250-secrets/llama-api-key
+      if [ ! -s "$f" ]; then
+        install -d -m 700 /var/lib/bc250-secrets
+        umask 077
+        LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 48 > "$f"
+      fi
+    '';
   };
 
   # --- Boot ---
