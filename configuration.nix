@@ -210,7 +210,7 @@ in
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
     extra-substituters = [ "https://neoney.cachix.org" "https://kappawaii.cachix.org" ];
-    extra-trusted-public-keys = [ "neoney.cachix.org-1:bsFaTdG04tfzci0osGfosbRX8KX94Ih/2hU0HpJ+qRM=" "kappawaii.cachix.org-1:PASTE-THE-REST-HERE" ];
+    extra-trusted-public-keys = [ "neoney.cachix.org-1:bsFaTdG04tfzci0osGfosbRX8KX94Ih/2hU0HpJ+qRM=" "kappawaii.cachix.org-1:4OjsK6+MXtp3oQIB3zLT18bmvCE8Yc7KBnAlK5IQijk=" ];
     # Board shares 16 GB between CPU and GPU: keep local builds small
     max-jobs = 1;
     cores = 6;
