@@ -3,7 +3,7 @@
 A turnkey, easy to install, stable NixOS configuration for users new to the **AMD BC-250**, used as a headless local LLM server:
 Tuned for performance and low idle power usage (~72W currently with an oversized PSU, possible below 50W with memory tuning and a better PSU like LOP-300-12 but not stable yet).
 
-### By default the board runs stock: 24 CUs, 6 cores/12 threads, no CPU tuning. Once your board is confirmed stable with all compute unlocked, set `unlockCUs`, `unlockCores` and `cpuTuning` to `true` in `private.nix`, `rebuild`, then reboot (a cold boot for the cores). `nixstatus` shows which mode is active.
+By default the board runs stock: 24 CUs, 6 cores/12 threads, no CPU tuning. Once your board is confirmed stable with all compute unlocked, set `unlockCUs`, `unlockCores` and `cpuTuning` to `true` in `private.nix`, `rebuild`, then reboot (a cold boot for the cores). `nixstatus` shows which mode is active.
 
 ## Quick Start
 (You really should read the rest so you understand what you install but here is the TL;DR)
