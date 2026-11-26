@@ -39,12 +39,13 @@ line "Kernel" "$(uname -r)"
 line "Uptime" "$(awk '{d=int($1/86400); h=int($1%86400/3600); m=int($1%3600/60); if (d) printf "%dd ", d; printf "%dh %dm", h, m}' /proc/uptime)"
 
 if git -C "$NS_FLAKE_DIR" rev-parse >/dev/null 2>&1; then
-  branch=$(git -C "$NS_FLAKE_DIR" branch --show-current 2>/dev/null)
-  commit=$(git -C "$NS_FLAKE_DIR" rev-parse --short HEAD 2>/dev/null)
+  # owner/repo from the remote URL, then the release tag (e.g. 1.0.0) or the commit
+  repo=$(git -C "$NS_FLAKE_DIR" remote get-url origin 2>/dev/null | sed -E 's#\.git$##; s#^.*[:/]([^/:]+/[^/:]+)$#\1#')
+  ver=$(git -C "$NS_FLAKE_DIR" describe --tags --exact-match 2>/dev/null || git -C "$NS_FLAKE_DIR" rev-parse --short HEAD 2>/dev/null)
   if [ -n "$(git -C "$NS_FLAKE_DIR" status --porcelain 2>/dev/null)" ]; then
-    line "Config" "$NS_FLAKE_DIR ${branch}@${commit} ${YEL}(uncommitted changes)${R}"
+    line "Config" "${repo:-$NS_FLAKE_DIR} ${ver} ${YEL}(uncommitted changes)${R}"
   else
-    line "Config" "$NS_FLAKE_DIR ${branch}@${commit} $(mark ok)"
+    line "Config" "${repo:-$NS_FLAKE_DIR} ${ver} $(mark ok)"
   fi
 else
   line "Config" "$NS_FLAKE_DIR (not a git repo)"
