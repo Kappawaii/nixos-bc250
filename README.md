@@ -31,7 +31,7 @@ This is how you setup and personalize your instance !
 }
 ```
 
-- Use the **public** key of the computer you connect **from**. Password login is disabled, so without a matching key you can't log in.
+- Use the **public** key of the computer you connect **from**. Password login is disabled, so ssh keys are mandatory.
 - Git ignores this file, so Nix only sees it if the build command starts with `path:` (for example `path:/etc/nixos#bc250`). The `rebuild` alias and the commands in this README already do this. If you type your own command without `path:`, it fails with "private.nix does not exist".
 - The installer copies `private.nix` onto the board, so later rebuilds work without redoing it.
 - To use a different model: add it to `models.nix`, put its name in the `model` field, then `rebuild`. The new model downloads automatically.
