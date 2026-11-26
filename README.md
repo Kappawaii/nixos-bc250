@@ -112,7 +112,7 @@ The only ports exposed are SSH (key only by design), llama.cpp (8080), Glances (
 
 ## License
 
-[MIT](LICENSE). This repo references these projects, with their own licenses :
+[MIT](LICENSE). This repo references these projects, with their own licenses:
 [n3oney/bc250-nixos](https://github.com/n3oney/bc250-nixos) (GPL-2.0-only),
 [TesseractCat/bc250-nixos](https://github.com/TesseractCat/bc250-nixos) (MIT),
 [filippor/cyan-skillfish-governor](https://github.com/filippor/cyan-skillfish-governor) (MIT).

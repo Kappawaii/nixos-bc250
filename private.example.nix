@@ -6,4 +6,6 @@
   gitName  = "me";
   gitEmail = "me@example.com";
   model    = "qwen4b"; # model name from models.nix
+  unlockCUs   = false;   # true = 40 CUs, false = stock 24 CUs
+  unlockCores = false;   # true = 8 cores/16 threads, false = stock 6 cores/12 threads
 }
