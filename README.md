@@ -8,7 +8,10 @@ Tuned for performance and low idle power usage (~72W currently with an oversized
 ## Quick Start
 (You really should read the rest so you understand what you install but here is the TL;DR)
 
-Needs: a BC-250, a USB stick, a disk to install the OS on (ideally M.2; USB should work too, but some devices take too long to start and the BC250 doesn't see them), and any x86_64 Linux machine with Nix or Docker.
+Needs:
+- a BC-250,
+- USB stick (TODO size minimum),
+- a disk to install the OS on (ideally M.2; USB works too, but some devices are slow and not recognized by the BC250), and any x86_64 Linux machine with Nix or Docker. 60GB Minimum, 120 Recommended.
 
 **About `private.nix`:** everything personal lives in this one file, which is git-ignored and never committed:
 This is how you setup and personalize your instance !
