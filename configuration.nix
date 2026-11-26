@@ -156,9 +156,39 @@ in
 
   # --- Monitoring for Home Assistant ---
   services.glances = {
-    extraArgs = [ "--webserver" "-t" "10" ];
+    extraArgs = [ "--webserver" "-t" "10" "--password" ];
     enable = true;
     openFirewall = true; # port 61208
+  };
+
+  # Glances web password: generated once on the board, like the llama.cpp key.
+  # Read it with: sudo cat /var/lib/bc250-secrets/glances-password (username: glances)
+  # Same format as "glances --password": salt + '$' + pbkdf2(pbkdf2(password, no salt), salt), sha256, 100000 rounds, 128 bytes
+  systemd.services.glances-password = {
+    description = "Create the Glances web password if it's missing";
+    wantedBy = [ "multi-user.target" ];
+    before = [ "glances.service" ];
+    path = [ pkgs.coreutils pkgs.python3 ];
+    serviceConfig = { Type = "oneshot"; RemainAfterExit = true; };
+    script = ''
+      d=/var/lib/bc250-secrets
+      install -d -m 700 "$d"
+      umask 077
+      if [ ! -s "$d/glances-password" ]; then
+        LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 24 > "$d/glances-password"
+        rm -f "$d/glances.pwd"
+      fi
+      if [ ! -s "$d/glances.pwd" ]; then
+        python3 -c 'import hashlib,sys,uuid; h=lambda pw,salt: hashlib.pbkdf2_hmac("sha256",pw.encode(),salt.encode(),100000,dklen=128).hex(); p=sys.stdin.read(); s=uuid.uuid4().hex; sys.stdout.write(s+"$"+h(h(p,""),s))' \
+          < "$d/glances-password" > "$d/glances.pwd"
+      fi
+    '';
+  };
+  # Hand the hash to Glances (it runs as a temporary user that can't read /var/lib/bc250-secrets)
+  systemd.services.glances = {
+    wants = [ "glances-password.service" ];
+    after = [ "glances-password.service" ];
+    serviceConfig.LoadCredential = [ "glances.pwd:/var/lib/bc250-secrets/glances.pwd" ];
   };
 
   # --- GPU load for Glances / Home Assistant ---
@@ -193,6 +223,10 @@ in
     # Not connected on the BC-250 (always 0)
     hide=CPU Socket,M2_1,PCH,PCIe x1,CPU Fan,System Fan.*
     alias=Pump Fan:BC-250 fan,System:Board,VRM MOS:VRM
+
+    [passwords]
+    # folder with the web password hash (glances.pwd), handed over by systemd
+    local_password_path=/run/credentials/glances.service
 
   '';
 

@@ -59,7 +59,7 @@ The two binary caches provide the pre-built kernel, llama.cpp and the other heav
 4. The model set in `private.nix` downloads automatically on first boot (several GB, so give it a few minutes). Check with `nixstatus` or `systemctl status llm-model-download`.
 5. You're done ! Your LLM is ready:
    - The API is at `http://<hostName>.local:8080` (OpenAI-compatible). It needs a key, generated on the board at first boot: read it with `sudo cat /var/lib/bc250-secrets/llama-api-key` and put it in your client's API key field (e.g. Home Assistant). `/health` stays open without a key.
-   - Glances (monitoring) is at `http://<hostName>.local:61208`.
+   - Glances (monitoring) is at `http://<hostName>.local:61208`. Log in as `glances`, with the password from `sudo cat /var/lib/bc250-secrets/glances-password` (also generated at first boot).
 
 To change something, edit `/etc/nixos/*.nix` on the board, then `rebuild`.
 
@@ -92,7 +92,7 @@ Older builds are selectable from the boot menu if a change breaks something.
 |CPU|[TesseractCat/bc250-nixos](https://github.com/TesseractCat/bc250-nixos): `bc250-core-unlock` 6c/12t → **8c/16t** (**off by default**, `unlockCores`; adds one automatic reboot per cold boot) and ACPI table fix (C-states + schedutil). arieltune CPU tuning: 3.8 GHz boost + curve undervolt -18 (**off by default**, `cpuTuning`)|`flake.nix`, `configuration.nix`, `private.nix`|
 |LLM|llama.cpp (Vulkan) on port **8080**, API key required. Model chosen by name in `private.nix` from the presets in `models.nix`, downloaded automatically. Default: `Qwen3.5-4B-Q6_K.gguf`, 32k context, tool calling (`--jinja`), prompt cache in RAM capped at 1 GB (`--cache-ram 1024`), ~72 tokens/s unlocked|`models.nix`, `configuration.nix` → `bc250.llamaVulkan`|
 |GPU idle|`cyan-skillfish-governor-smu`, [filippor's memory-profile branch](https://github.com/filippor/cyan-skillfish-governor) pinned to `b770314`: GPU 350-1850 MHz down to 700 mV, `smu` set method, `busy-flag` usage, `fix-freq`; memory/fabric profiles **disabled** (see Issues)|`flake.nix` (package), `configuration.nix` (settings)|
-|Access|SSH key only, no passwords, password-less sudo; llama.cpp API key generated on the board at `/var/lib/bc250-secrets/llama-api-key`; reachable as `<hostName>.local` (mDNS)|`configuration.nix`, `private.nix`|
+|Access|SSH key only, no passwords, password-less sudo; llama.cpp API key and Glances password generated on the board in `/var/lib/bc250-secrets/`; reachable as `<hostName>.local` (mDNS)|`configuration.nix`, `private.nix`|
 |Monitoring|`nixstatus` health check; Glances on port **61208**, patched to show GPU usage (from the `gpu-busy` service, also used by Home Assistant); fan and VRM sensors via the nct6687d module|`configuration.nix`, `nixstatus.nix`|
 |Installer|Unattended USB installer: wipes the only non-USB-stick disk, installs, copies this repo to `/etc/nixos`, powers off|`autoinstall.nix`|
 |Binary cache|Pre-built kernel (with build files), llama.cpp, Glances, governor and sensor module on [kappawaii.cachix.org](https://kappawaii.cachix.org), on top of [neoney.cachix.org](https://neoney.cachix.org)|`configuration.nix`, build command above|
@@ -104,7 +104,7 @@ If you're lost, see the [Detailed Install](https://github.com/Kappawaii/nixos-bc
 * **BIOS**: modded BIOS, 512 MB UMA/VRAM split and BIOS settings are on the board itself, including the USB boot fixes
 (Chipset → USB Configuration: device power-up delay, USB2.0 Port0/1 battery charging enabled).
 * **Models**: the `.gguf` isn't in the repo or the ISO (it's several GB); it's downloaded automatically on first boot.
-* **API key**: generated on each board at first boot and kept in `/var/lib/bc250-secrets/` (a reinstall creates a new one).
+* **API key and Glances password**: generated on each board at first boot and kept in `/var/lib/bc250-secrets/` (a reinstall creates new ones).
 
 ## Checks
 
@@ -121,13 +121,13 @@ sudo dmesg | grep -iE 'amdgpu.*(reset|wedged)'   # only the two SDMA resets at ~
 * The **memory fabric profile is disabled** (`memory-fabric-profile.enabled = false;`). It saved ~10-20 W at idle
 (~52 W at the wall with it on), but froze the board randomly.
 * The kernel is pinned (7.0.11+ regresses SDMA on this board): treat `nix flake update` as a hardware event and re-test.
-* Glances has no authentication yet, and sudo needs no password. Keep the board on your LAN and don't port-forward its ports.
+* sudo needs no password. Keep the board on your LAN and don't port-forward its ports.
 * This is still in development, and I'm currently testing repeatability of the install. Some issues might still be hidden somewhere, feel free to post issues or PRs here.
 
 ## Disclaimer
 
 As for most things BC-250, AI LLMs were heavily used in the development of this Nix configuration. Every bit of code or documentation produced by an LLM was read, human-reviewed, and tested.
-The only ports exposed are SSH (key only by design), llama.cpp (8080, API key), Glances (61208) and mDNS (5353/UDP, only announces the board's name on the LAN).
+The only ports exposed are SSH (key only by design), llama.cpp (8080, API key), Glances (61208, password) and mDNS (5353/UDP, only announces the board's name on the LAN).
 
 ## License
 
