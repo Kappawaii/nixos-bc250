@@ -25,16 +25,17 @@ in
     enable = true;
     vulkan.enable = true;
   };
-  # CU / core unlocks, set per board in private.nix (default: on)
-  hardware.bc250.computeUnitWriteMode = if (p.unlockCUs or true) then 3 else 0;
-  services.bc250-core-unlock.enable = p.unlockCores or true;
+  # CU / core unlocks, set per board in private.nix (default: off = stock 24 CUs, 6 cores)
+  hardware.bc250.computeUnitWriteMode = if (p.unlockCUs or false) then 3 else 0;
+  services.bc250-core-unlock.enable = p.unlockCores or false;
 
   # arieltune's profile service also forced 40 CU (in /etc/modprobe.d) and the GPU mode,
   # which unlockCUs and the GPU governor handle now: keep only its CPU part (below)
   services.arieltune-tune.enable = false;
 
-  # CPU: boost 3.8 GHz + curve undervolt -18 + 90 °C limits, applied at every boot
-  systemd.services.bc250-cpu-oc = {
+  # CPU tuning: boost 3.8 GHz + curve undervolt -18 + 90 °C limits (arieltune's standard values),
+  # applied at every boot when cpuTuning = true in private.nix (default: off)
+  systemd.services.bc250-cpu-oc = pkgs.lib.mkIf (p.cpuTuning or false) {
     description = "BC-250 CPU boost 3.8 GHz + curve undervolt (arieltune)";
     wantedBy = [ "multi-user.target" ];
     after = [ "sys-kernel-debug.mount" "systemd-udev-settle.service" ];
@@ -205,7 +206,7 @@ in
     options = "--delete-older-than 14d";
   };
 
-  time.timeZone = "Europe/Paris";
+  time.timeZone = p.timeZone or "UTC";
   environment.systemPackages = with pkgs; [ nano htop vulkan-tools git usbutils lm_sensors nvtopPackages.amd config.services.arieltune-tune.package ];
 
   system.stateVersion = "26.11"; # set once at install, never change

@@ -6,6 +6,8 @@
   gitName  = "me";
   gitEmail = "me@example.com";
   model    = "qwen4b"; # model name from models.nix
+  timeZone = "UTC";   # e.g. "Europe/Paris" (list: timedatectl list-timezones)
   unlockCUs   = false;   # true = 40 CUs, false = stock 24 CUs
   unlockCores = false;   # true = 8 cores/16 threads, false = stock 6 cores/12 threads
+  cpuTuning   = false;   # true = CPU boost 3.8 GHz + undervolt (arieltune defaults), false = stock CPU
 }

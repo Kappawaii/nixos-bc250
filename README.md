@@ -3,7 +3,7 @@
 A turnkey, easy to install, stable NixOS configuration for an **AMD BC-250** used as a headless local LLM server:
 Tuned for performance and low idle power usage (~72W currently with an oversized PSU, possible below 50W with memory tuning and a better PSU like LOP-300-12 but not stable yet).
 
-### Both unlocks are on by default (40 CUs, 8 cores/16 threads). If your board isn't stable with them, set `unlockCUs` / `unlockCores` to `false` in `private.nix`, `rebuild`, then power the board off and on (a warm reboot keeps the 8 cores). `nixstatus` shows which mode is active.
+### By default the board runs stock: 24 CUs, 6 cores/12 threads, no CPU tuning. Once your board is confirmed stable unlocked, set `unlockCUs`, `unlockCores` and `cpuTuning` to `true` in `private.nix`, `rebuild`, then reboot (a cold boot for the cores). `nixstatus` shows which mode is active.
 
 ## Quick Start
 (You really should read the rest so you understand what you install but here is the TL;DR)
@@ -26,8 +26,10 @@ This is how you setup and personalize your instance !
   gitName  = "me";                                 # for commits made on the board
   gitEmail = "me@example.com";
   model    = "qwen4b";                             # model name from models.nix
-  unlockCUs   = true;                              # true = 40 CUs, false = stock 24 CUs
-  unlockCores = true;                              # true = 8 cores/16 threads, false = stock 6 cores/12 threads
+  unlockCUs   = false;                             # true = 40 CUs, false = stock 24 CUs
+  unlockCores = false;                             # true = 8 cores/16 threads, false = stock 6 cores/12 threads
+  cpuTuning   = false;                             # true = CPU boost 3.8 GHz + undervolt (arieltune defaults), false = stock CPU
+  timeZone = "UTC";                                # e.g. "Europe/Paris"
 }
 ```
 
@@ -73,7 +75,7 @@ Older builds are selectable from the boot menu if a change breaks something.
 
 |Area|What|Where|
 |-|-|-|
-|Base|[n3oney/bc250-nixos](https://github.com/n3oney/bc250-nixos): patched `7.0.9-cachyos` kernel, Mesa 26, 40-CU unlock (switchable with `unlockCUs`), 16 GiB GTT, arieltune CPU overclock only (3.8 GHz boost, curve undervolt -18, `bc250-cpu-oc` service)|`flake.nix`|
+|Base|[n3oney/bc250-nixos](https://github.com/n3oney/bc250-nixos): patched `7.0.9-cachyos` kernel, Mesa 26, 40-CU unlock (switchable with `unlockCUs`), 16 GiB GTT, arieltune CPU tuning only (3.8 GHz boost + curve undervolt -18, switchable with `cpuTuning`)|`flake.nix`|
 |CPU |`bc250-core-unlock` from [TesseractCat/bc250-nixos](https://github.com/TesseractCat/bc250-nixos): 6c/12t → **8c/16t** (switchable with `unlockCores`), runs in the systemd initrd (adds one automatic reboot per cold boot) - ACPI table fix (C-states + schedutil)|`flake.nix`|
 |LLM|llama.cpp (Vulkan) on port **8080**. Model chosen by name in `private.nix` from the presets in `models.nix`, downloaded automatically. Default: `Qwen3.5-4B-Q6_K.gguf`, 32k context, tool calling (`--jinja`), prompt cache in RAM capped at 1 GB (`--cache-ram 1024`), ~72 tokens/s|`models.nix` + `configuration.nix` → `bc250.llamaVulkan`|
 |GPU idle|`cyan-skillfish-governor-smu`, [filippor's memory-profile branch](https://github.com/filippor/cyan-skillfish-governor) pinned to `b770314`: GPU 350–1850 MHz down to 700 mV, `smu` set method, `busy-flag` usage, `fix-freq`; memory/fabric profiles **disabled** (see Issues)|`flake.nix` (package) + `configuration.nix` (settings)|

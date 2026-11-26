@@ -11,11 +11,10 @@ let
     "llm-model-download"
     "gpu-busy"
     "cyan-skillfish-governor-smu"
-    "bc250-cpu-oc"
     "glances"
     "avahi-daemon"
     "sshd"
-  ];
+  ] ++ lib.optional (p.cpuTuning or false) "bc250-cpu-oc";
   nixstatus = pkgs.writeShellScriptBin "nixstatus" ''
     export PATH=${lib.makeBinPath (with pkgs; [
       coreutils findutils gnugrep gnused gawk procps util-linux iproute2 curl git systemd
