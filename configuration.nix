@@ -266,6 +266,7 @@ in
     flakeconf = "sudo nano /etc/nixos/flake.nix";
     privconf  = "sudo nano /etc/nixos/private.nix";
     modelconf = "sudo nano /etc/nixos/models.nix";
+    glancespass = "sudo cat /var/lib/bc250-secrets/glances-password; echo";
   };
   services.avahi = {
     enable = true;

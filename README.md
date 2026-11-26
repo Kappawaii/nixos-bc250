@@ -80,6 +80,7 @@ Uses nano cause I prefer it you can change the aliases if you want :)
 |`rollback`|Go back to the previous build|
 |`privconf`|Open your personal settings `/etc/nixos/private.nix` (user, SSH keys, hostname, model, unlocks)|
 |`modelconf`|Open the model list `/etc/nixos/models.nix`|
+|`glancespass`|Show the Glances web password (username `glances`)|
 |`nixstatus`|Health check: shows every setting and whether it currently works on the board|
 
 Older builds are selectable from the boot menu if a change breaks something.
