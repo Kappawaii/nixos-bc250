@@ -11,7 +11,7 @@ fi
 OK="${GRN}✓${R}"; BAD="${RED}✗${R}"; WARN="${YEL}~${R}"
 
 # --- helpers ---------------------------------------------------------------
-rd() { [ -r "$1" ] && cat "$1" 2>/dev/null; }          # read a file, quiet
+rd() { [ -r "$1" ] && timeout 2 cat "$1" 2>/dev/null; }   # read a file, max 2 s (GPU sensors can stall right after boot)
 hwmon() {                                                # hwmon dir by driver name
   local h
   for h in /sys/class/hwmon/hwmon*; do
@@ -88,7 +88,7 @@ busy=$(rd /run/gpu-busy)
 line "GPU now" "${sclk} @ ${vgfx:-n/a}, ${busy:-?}% busy, ${gpow}, ${gtemp}"
 line "Governor" "${NS_GOV_MIN}-${NS_GOV_MAX} MHz"
 # memory/fabric profile: must stay off (it froze the board under load)
-mclk=$(sed -n 's/^[0-9]*: *\([0-9]*\) *[Mm][Hh]z *\*.*/\1 MHz/p' "$(ls /sys/class/drm/card*/device/pp_dpm_mclk 2>/dev/null | head -1)" 2>/dev/null)
+mclk=$(timeout 2 sed -n 's/^[0-9]*: *\([0-9]*\) *[Mm][Hh]z *\*.*/\1 MHz/p' "$(ls /sys/class/drm/card*/device/pp_dpm_mclk 2>/dev/null | head -1)" 2>/dev/null)
 if [ "$NS_MEMPROFILE" = off ]; then st=ok; else st=warn; fi
 line "Mem prof." "${NS_MEMPROFILE}${mclk:+, memory clock $mclk}$(hint $st "expect off: on can freeze the board") $(mark $st)"
 

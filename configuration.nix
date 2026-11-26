@@ -6,6 +6,7 @@ let
   model = models.${p.model} or (builtins.head (builtins.attrValues models));
 in
 {
+  imports = [ ./nixstatus.nix ];
   # Git: commit identity + remember the token after the first push
   programs.git = {
     enable = true;
@@ -28,9 +29,22 @@ in
   hardware.bc250.computeUnitWriteMode = if (p.unlockCUs or true) then 3 else 0;
   services.bc250-core-unlock.enable = p.unlockCores or true;
 
-  services.arieltune-tune = {
-    enable = true;
-    profile = "balanced";
+  # arieltune's profile service also forced 40 CU (in /etc/modprobe.d) and the GPU mode,
+  # which unlockCUs and the GPU governor handle now: keep only its CPU part (below)
+  services.arieltune-tune.enable = false;
+
+  # CPU: boost 3.8 GHz + curve undervolt -18 + 90 °C limits, applied at every boot
+  systemd.services.bc250-cpu-oc = {
+    description = "BC-250 CPU boost 3.8 GHz + curve undervolt (arieltune)";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "sys-kernel-debug.mount" "systemd-udev-settle.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "${pkgs.lib.getExe config.services.arieltune-tune.package} apu cpu set --boost 3800 --scale -18 --cpu-temp 90 --gpu-temp 90";
+      Restart = "on-failure";  # debugfs may not be ready right at boot
+      RestartSec = 5;
+    };
   };
   # fan + board sensors (Nuvoton NCT6687); needs the kernel build files,
   # so the first rebuild compiles the kernel once (~1-2 h)
@@ -192,17 +206,9 @@ in
   };
 
   time.timeZone = "Europe/Paris";
-  environment.systemPackages = with pkgs; [ nano htop vulkan-tools git usbutils lm_sensors nvtopPackages.amd ];
+  environment.systemPackages = with pkgs; [ nano htop vulkan-tools git usbutils lm_sensors nvtopPackages.amd config.services.arieltune-tune.package ];
 
   system.stateVersion = "26.11"; # set once at install, never change
-  # arieltune runs before amdgpu's debugfs exists at boot: retry until it works
-  systemd.services.arieltune-tune = {
-    after = [ "sys-kernel-debug.mount" ];
-    serviceConfig = {
-      Restart = "on-failure";
-      RestartSec = 5;
-    };
-  };
   environment.shellAliases = {
     rebuild   = "sudo nixos-rebuild switch --flake path:/etc/nixos#bc250";
     rollback  = "sudo nixos-rebuild switch --rollback";
