@@ -26,8 +26,6 @@ This is how you setup and personalize your instance !
   user     = "me";                                 # your login name on the board
   hostName = "bc250";                              # reachable as <hostName>.local (bc250.local by default)
   sshKeys  = [ "ssh-ed25519 AAAA... me@pc" ];      # public key(s) of the PC(s) you SSH from
-  gitName  = "me";                                 # for commits made on the board
-  gitEmail = "me@example.com";
   model    = "qwen4b";                             # model name from models.nix
   unlockCUs   = false;                             # true = 40 CUs, false = stock 24 CUs
   unlockCores = false;                             # true = 8 cores/16 threads, false = stock 6 cores/12 threads
@@ -40,7 +38,7 @@ Then build the installer:
 
 ```bash
 git clone <this-repo-url> nixos-bc250 && cd nixos-bc250
-cp private.example.nix private.nix && nano private.nix   # your user, SSH key, git name/email
+cp private.example.nix private.nix && nano private.nix   # your user, SSH key, model...
 nix build path:.#autoinstallIso --print-build-logs \
   --option extra-substituters https://neoney.cachix.org \
   --option extra-trusted-public-keys neoney.cachix.org-1:bsFaTdG04tfzci0osGfosbRX8KX94Ih/2hU0HpJ+qRM=

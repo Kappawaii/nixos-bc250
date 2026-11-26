@@ -7,12 +7,10 @@ let
 in
 {
   imports = [ ./nixstatus.nix ];
-  # Git: commit identity + remember the token after the first push
+  # Git: remember the token after the first push (set your name/email with git config --global)
   programs.git = {
     enable = true;
     config = {
-      user.name = p.gitName;
-      user.email = p.gitEmail;
       credential.helper = "store";
     };
   };
