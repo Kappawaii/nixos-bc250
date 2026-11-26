@@ -74,15 +74,15 @@ Uses nano cause I prefer it you can change the aliases if you want :)
 
 |Alias|Does|
 |-|-|
+|`nixstatus`|Health check: shows every setting and whether it currently works on the board|
+|`privconf`|Open your personal settings `/etc/nixos/private.nix` (user, SSH keys, hostname, model selected, unlocks)|
+|`modelconf`|Open the model list `/etc/nixos/models.nix`|
 |`nixconf`|Open the nix configuration file `/etc/nixos/configuration.nix`|
 |`flakeconf`|Open the flake configuration file `/etc/nixos/flake.nix`|
 |`rebuild`|Rebuild the NixOS configuration after you do any changes: `sudo nixos-rebuild switch --flake path:/etc/nixos#bc250`|
 |`rollback`|Go back to the previous build|
-|`privconf`|Open your personal settings `/etc/nixos/private.nix` (user, SSH keys, hostname, model, unlocks)|
-|`modelconf`|Open the model list `/etc/nixos/models.nix`|
 |`glancespass`|Show the Glances web password (username `glances`)|
 |`glancesnewpass`|Generate a new random Glances password and show it (update it in Home Assistant afterwards)|
-|`nixstatus`|Health check: shows every setting and whether it currently works on the board|
 
 Older builds are selectable from the boot menu if a change breaks something.
 
