@@ -267,6 +267,7 @@ in
     privconf  = "sudo nano /etc/nixos/private.nix";
     modelconf = "sudo nano /etc/nixos/models.nix";
     glancespass = "sudo cat /var/lib/bc250-secrets/glances-password; echo";
+    glancesnewpass = "sudo rm -f /var/lib/bc250-secrets/glances-password /var/lib/bc250-secrets/glances.pwd && sudo systemctl restart glances-password glances && sudo cat /var/lib/bc250-secrets/glances-password; echo";
   };
   services.avahi = {
     enable = true;
