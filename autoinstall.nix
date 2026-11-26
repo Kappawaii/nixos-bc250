@@ -5,7 +5,7 @@ let
   diskoScript = target.config.system.build.diskoScript;
 in
 {
-  isoImage.isoName = lib.mkForce "bc250-autoinstall.iso";
+  image.baseName = lib.mkForce "bc250-autoinstall";   # ISO file name, without .iso
 
   # SSH into the live installer to watch progress: ssh root@<its IP>, journalctl -fu bc250-autoinstall
   services.openssh.enable = true;
