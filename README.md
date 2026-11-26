@@ -75,12 +75,12 @@ Older builds are selectable from the boot menu if a change breaks something.
 
 |Area|What|Where|
 |-|-|-|
-|Base|[n3oney/bc250-nixos](https://github.com/n3oney/bc250-nixos): patched `7.0.9-cachyos` kernel, Mesa 26, 40-CU unlock (switchable with `unlockCUs`), 16 GiB GTT, arieltune CPU tuning only (3.8 GHz boost + curve undervolt -18, switchable with `cpuTuning`)|`flake.nix`|
-|CPU |`bc250-core-unlock` from [TesseractCat/bc250-nixos](https://github.com/TesseractCat/bc250-nixos): 6c/12t → **8c/16t** (switchable with `unlockCores`), runs in the systemd initrd (adds one automatic reboot per cold boot) - ACPI table fix (C-states + schedutil)|`flake.nix`|
-|LLM|llama.cpp (Vulkan) on port **8080**. Model chosen by name in `private.nix` from the presets in `models.nix`, downloaded automatically. Default: `Qwen3.5-4B-Q6_K.gguf`, 32k context, tool calling (`--jinja`), prompt cache in RAM capped at 1 GB (`--cache-ram 1024`), ~72 tokens/s|`models.nix` + `configuration.nix` → `bc250.llamaVulkan`|
-|GPU idle|`cyan-skillfish-governor-smu`, [filippor's memory-profile branch](https://github.com/filippor/cyan-skillfish-governor) pinned to `b770314`: GPU 3501850 MHz down to 700 mV, `smu` set method, `busy-flag` usage, `fix-freq`; memory/fabric profiles **disabled** (see Issues)|`flake.nix` (package) + `configuration.nix` (settings)|
-|Access|SSH key only, no passwords anywhere, password-less sudo; reachable as `<hostName>.local` (mDNS)|`configuration.nix`|
-|Monitoring|Modded Glances version with GPU usage on port **61208**|`configuration.nix`|
+|Base|[n3oney/bc250-nixos](https://github.com/n3oney/bc250-nixos): patched `7.0.9-cachyos` kernel, Mesa 26, 16 GiB GTT, 40-CU unlock (**off by default**, `unlockCUs`)|`flake.nix`, `private.nix`|
+|CPU|[TesseractCat/bc250-nixos](https://github.com/TesseractCat/bc250-nixos): `bc250-core-unlock` 6c/12t → **8c/16t** (**off by default**, `unlockCores`; adds one automatic reboot per cold boot) and ACPI table fix (C-states + schedutil). arieltune CPU tuning: 3.8 GHz boost + curve undervolt -18 (**off by default**, `cpuTuning`)|`flake.nix`, `configuration.nix`, `private.nix`|
+|LLM|llama.cpp (Vulkan) on port **8080**. Model chosen by name in `private.nix` from the presets in `models.nix`, downloaded automatically. Default: `Qwen3.5-4B-Q6_K.gguf`, 32k context, tool calling (`--jinja`), prompt cache in RAM capped at 1 GB (`--cache-ram 1024`), ~72 tokens/s unlocked|`models.nix`, `configuration.nix` → `bc250.llamaVulkan`|
+|GPU idle|`cyan-skillfish-governor-smu`, [filippor's memory-profile branch](https://github.com/filippor/cyan-skillfish-governor) pinned to `b770314`: GPU 350–1850 MHz down to 700 mV, `smu` set method, `busy-flag` usage, `fix-freq`; memory/fabric profiles **disabled** (see Issues)|`flake.nix` (package), `configuration.nix` (settings)|
+|Access|SSH key only, no passwords anywhere, password-less sudo; reachable as `<hostName>.local` (mDNS)|`configuration.nix`, `private.nix`|
+|Monitoring|`nixstatus` health check; Glances on port **61208**, patched to show GPU usage (from the `gpu-busy` service, also used by Home Assistant); fan and VRM sensors via the nct6687d module|`configuration.nix`, `nixstatus.nix`|
 |Installer|Unattended USB installer: wipes the only non-USB-stick disk, installs, copies this repo to `/etc/nixos`, powers off|`autoinstall.nix`|
 
 If you're lost, see the [Detailed Install](https://github.com/Kappawaii/nixos-bc250/wiki/Detailed-Install) wiki page for the Docker build and how to reconnect `/etc/nixos` to git, and longer instructions to set this project up.
