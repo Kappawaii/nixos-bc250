@@ -53,9 +53,9 @@ gap
 # --- CPU -------------------------------------------------------------------
 threads=$(nproc)
 cores=$(lscpu 2>/dev/null | awk -F: '/^Core\(s\) per socket/{gsub(/ /, "", $2); print $2}')
-if [ "$NS_UNLOCK_CORES" = 1 ]; then want_c=8; c_txt="unlock on"; else want_c=6; c_txt="unlock off"; fi
-[ "$cores" = "$want_c" ] && st=ok || st=bad
-line "CPU" "${cores:-?} cores / ${threads} threads$(hint $st "${c_txt}, expect ${want_c}") $(mark $st)"
+if [ "$NS_UNLOCK_CORES" = 1 ]; then want_c=8; c_txt="unlock on"; c_note=""; else want_c=6; c_txt="unlock off"; c_note=" (not unlocked)"; fi
+[ "$cores" = "$want_c" ] && st=ok || st=bad; [ $st = ok ] || c_note=""
+line "CPU" "${cores:-?} cores / ${threads} threads${c_note}$(hint $st "${c_txt}, expect ${want_c}") $(mark $st)"
 
 idle=$(find /sys/devices/system/cpu/cpu0/cpuidle -maxdepth 1 -name 'state*' 2>/dev/null | wc -l)
 gov=$(rd /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)
@@ -70,9 +70,9 @@ gap
 
 # --- GPU -------------------------------------------------------------------
 cus=$(awk '/simd_count/{s=$2} /simd_per_cu/{p=$2} END{if (p) print s / p}' /sys/class/kfd/kfd/topology/nodes/*/properties 2>/dev/null)
-if [ "$NS_CU_MODE" = 3 ]; then want_cu=40; cu_txt="unlock on"; else want_cu=24; cu_txt="unlock off"; fi
-[ "$cus" = "$want_cu" ] && st=ok || st=bad
-line "GPU" "${cus:-?} CUs$(hint $st "${cu_txt}, expect ${want_cu}") $(mark $st)"
+if [ "$NS_CU_MODE" = 3 ]; then want_cu=40; cu_txt="unlock on"; cu_note=""; else want_cu=24; cu_txt="unlock off"; cu_note=" (not unlocked)"; fi
+[ "$cus" = "$want_cu" ] && st=ok || st=bad; [ $st = ok ] || cu_note=""
+line "GPU" "${cus:-?} CUs${cu_note}$(hint $st "${cu_txt}, expect ${want_cu}") $(mark $st)"
 
 gpu=$(hwmon amdgpu)
 sclk=$(div "$(rd "$gpu/freq1_input")" 1000000 "%.0f MHz")
