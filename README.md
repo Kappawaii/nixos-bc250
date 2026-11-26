@@ -65,7 +65,7 @@ To change something, edit `/etc/nixos/*.nix` on the board, then `rebuild`.
 
 ## Unlocking 40 CUs, 8 cores and CPU tuning
 
-Once your board is confirmed stable unlocked, set `unlockCUs`, `unlockCores` and `cpuTuning` to `true` in `private.nix` (`privconf`), `rebuild`, then power the board off and on: a warm reboot keeps the 8 cores in whatever state they were. `nixstatus` shows which mode is active. If the board isn't stable, set them back to `false` the same way.
+Once your board is confirmed stable unlocked, set `unlockCUs`, `unlockCores` and `cpuTuning` to `true` in `private.nix` (`privconf`), `rebuild`, then power the board off fully and back on manually, a warm reboot isn't enough.
 
 ## How to configure/modify
 
