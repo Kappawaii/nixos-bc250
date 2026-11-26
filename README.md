@@ -51,7 +51,8 @@ nix build path:.#autoinstallIso --print-build-logs \
 3. Remove the stick, power on, then `ssh <user>@<hostName>.local` (e.g. `ssh me@bc250.local`).
    If that doesn't resolve, find the IP in your router's list of connected devices.
 4. The model set in `private.nix` downloads automatically on first boot (several GB, so give it a few minutes). Check with `systemctl status llm-model-download`.
-5. The API is at `http://<hostName>.local:8080` (OpenAI-compatible) and Glances at `http://<hostName>.local:61208`.
+5. You're done ! Setup is complete and your LLM is ready and accessible !
+   The API is at `http://<hostName>.local:8080` (OpenAI-compatible) and Glances at `http://<hostName>.local:61208`.
    The API needs a key, generated on the board at first boot. Read it with `sudo cat /var/lib/bc250-secrets/llama-api-key`, and put it in your client's API-key field. `/health` stays open without a key.
 To change something, edit `/etc/nixos/*.nix` on the board, then `rebuild`.
 
