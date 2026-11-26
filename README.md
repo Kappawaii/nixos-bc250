@@ -10,7 +10,7 @@ By default the board runs **stock**: 24 CUs, 6 cores/12 threads, no CPU tuning. 
 
 Needs:
 - a BC-250
-- a USB drive (4GB or bigger),
+- a USB drive (2GB or bigger),
 - a disk to install the OS on (ideally M.2; USB works too, but some devices are slow and not recognized by the BC250), and any x86_64 Linux machine with Nix or Docker. 60GB Minimum, 120 Recommended.
 
 ### 1. Personalize your instance: `private.nix`
@@ -45,6 +45,9 @@ This is how you setup and personalize your instance !
 
 ### 2. Build the installer
 
+> [!NOTE]
+> Lots of binaries, including the kernel, have been built and cached for your convenience, and to save hours of compile time. If you decide to build from scratch, you can by leaving out the two `--option` lines from the build command and adding `--option substituters https://cache.nixos.org` instead. Nix then compiles everything that isn't in the official NixOS cache itself, including the kernel and llama.cpp. Expect a few hours and up to 10 GB of RAM.
+
 From the `nixos-bc250` folder:
 
 ```bash
@@ -55,16 +58,19 @@ nix build path:.#autoinstallIso --print-build-logs \
 
 The two binary caches provide the pre-built kernel, llama.cpp and the other heavy parts, so the build mostly downloads instead of compiling for hours. No Nix? See the [Detailed Install](https://github.com/Kappawaii/nixos-bc250/wiki/Detailed-Install) wiki page for the Docker build.
 
+
+
 ### 3. Install
-
 1. Write `result/iso/*.iso` to the stick (Rufus in **DD mode**).
-2. Boot the board from the stick. It wipes the only other disk, installs, and powers off.
-   > ⚠️ DISCONNECT ANY DISK WITH DATA YOU CARE ABOUT FIRST. YOU RISK LOSING ALL DATA CONNECTED TO THE BOARD WHEN STARTING THE BC-250 WITH THE INSTALL ISO STICK PLUGGED IN.
 
-3. Remove the stick, power on, then `ssh <user>@<hostName>.local` (e.g. `ssh me@bc250.local`).
+> [!CAUTION]
+> ⚠️ DISCONNECT ANY DISK WITH DATA YOU CARE ABOUT FIRST. YOU RISK LOSING ALL DATA CONNECTED TO THE BOARD WHEN STARTING THE BC-250 WITH THE INSTALL ISO STICK PLUGGED IN.
+
+2. Boot the board from the stick. It wipes the only other disk, installs, and powers off.
+4. Remove the stick, power on, then `ssh <user>@<hostName>.local` (e.g. `ssh me@bc250.local`).
    If that doesn't resolve, find the IP in your router's list of connected devices.
-4. The model set in `private.nix` downloads automatically on first boot (several GB, so give it a few minutes). Check with `nixstatus` or `systemctl status llm-model-download`.
-5. You're done ! Your LLM is ready:
+5. The model set in `private.nix` downloads automatically on first boot (several GB, so give it a few minutes). Check with `nixstatus` or `systemctl status llm-model-download`.
+6. You're done ! Your LLM is ready:
    - The API is at `http://<hostName>.local:8080` (OpenAI-compatible). It needs a key, generated on the board at first boot: read it with `sudo cat /var/lib/bc250-secrets/llama-api-key` and put it in your client's API key field (e.g. Home Assistant). `/health` stays open without a key.
    - Glances (monitoring) is at `http://<hostName>.local:61208`. Log in as `glances`, with the password from `sudo cat /var/lib/bc250-secrets/glances-password` (also generated at first boot).
 
